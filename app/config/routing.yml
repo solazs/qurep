@@ -1,3 +1,4 @@
-app:
-    resource: "@AppBundle/Controller/"
+qu_re_p_api:
+    resource: "@QuRePApiBundle/Controller/"
     type:     annotation
+    prefix:   /
