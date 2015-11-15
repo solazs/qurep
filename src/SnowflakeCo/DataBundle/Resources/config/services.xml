@@ -6,7 +6,7 @@
 
     <!--
     <services>
-        <service id="qu_re_p_api.example" class="QuReP\ApiBundle\Example">
+        <service id="snowflake_co_data.example" class="SnowflakeCo\DataBundle\Example">
             <argument type="service" id="service_id" />
             <argument>plain_value</argument>
             <argument>%parameter_name%</argument>

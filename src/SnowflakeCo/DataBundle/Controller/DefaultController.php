@@ -1,6 +1,6 @@
 <?php
 
-namespace QuReP\ApiBundle\Controller;
+namespace SnowflakeCo\DataBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -9,13 +9,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 class DefaultController extends Controller
 {
     /**
-     * @Route("/{apiRoute}", requirements={"apiRoute"=".+"})
+     * @Route("/hello/{name}")
      * @Template()
-     * @param string $apiRoute
-     * @return array
      */
-    public function indexAction($apiRoute)
+    public function indexAction($name)
     {
-        return array('name' => $apiRoute);
+        return array('name' => $name);
     }
 }
