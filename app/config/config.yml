@@ -78,3 +78,12 @@ swiftmailer:
     username:  "%mailer_user%"
     password:  "%mailer_password%"
     spool:     { type: memory }
+
+qurep_api:
+    entities:
+      - entity_name: users
+        class: SnowflakeCo\DataBundle\Entity\User
+      - entity_name: roomentries
+        class: SnowflakeCo\DataBundle\Entity\RoomEntry
+
+

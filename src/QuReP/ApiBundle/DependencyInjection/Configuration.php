@@ -18,11 +18,24 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('qu_re_p_api');
-
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $rootNode = $treeBuilder->root('qurep_api')
+            ->children()
+            ->arrayNode('entities')
+            ->requiresAtLeastOneElement()
+            ->prototype("array")
+            ->children()
+            ->scalarNode('entity_name')
+            ->IsRequired()
+            ->cannotBeEmpty()
+            ->end()
+            ->scalarNode('class')
+            ->IsRequired()
+            ->cannotBeEmpty()
+            ->end()
+            ->end()
+            ->end()
+            ->end()
+            ->end();
 
         return $treeBuilder;
     }
