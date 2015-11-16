@@ -3,3 +3,7 @@ parameters:
 services:
     qurep_api.route_analyzer:
         class: QuReP\ApiBundle\Services\RouteAnalyzer
+    qurep_api.exception_listener:
+      class: QuReP\ApiBundle\EventListener\ExceptionListener
+      tags:
+            - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }

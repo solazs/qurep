@@ -2,9 +2,11 @@
 
 namespace QuReP\ApiBundle\Controller;
 
+use QuReP\ApiBundle\Resources\Action;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Request;
 
 class DefaultController extends Controller
 {
@@ -14,8 +16,32 @@ class DefaultController extends Controller
      * @param string $apiRoute
      * @return array
      */
-    public function indexAction($apiRoute)
+    public function indexAction(Request $request, $apiRoute)
     {
-        return array('name' => $apiRoute);
+        $action = $this->get('qurep_api.route_analyzer')->getActionAndEntity($request, $apiRoute);
+        switch ($action['action']){
+            case Action::GET_SINGLE:
+
+                break;
+            case Action::GET_COLLECTION:
+
+                break;
+            case Action::UPDATE_SINGLE:
+
+                break;
+            case Action::UPDATE_COLLECTION:
+
+                break;
+            case Action::POST_SINGLE:
+
+                break;
+            case Action::DELETE_SINGLE:
+
+                break;
+            case Action::DELETE_COLLECTION:
+
+                break;
+        }
+        return array('name' => $apiRoute . "action: " . $action['action'] . ', entityClass: ' . $action['class']);
     }
 }
