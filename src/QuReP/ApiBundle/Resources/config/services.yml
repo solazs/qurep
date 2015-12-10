@@ -3,6 +3,9 @@ parameters:
 services:
     qurep_api.route_analyzer:
         class: QuReP\ApiBundle\Services\RouteAnalyzer
+    qurep_api.data_handler:
+        class: QuReP\ApiBundle\Services\DataHandler
+        arguments: [ @doctrine.orm.entity_manager ]
     qurep_api.exception_listener:
       class: QuReP\ApiBundle\EventListener\ExceptionListener
       tags:
