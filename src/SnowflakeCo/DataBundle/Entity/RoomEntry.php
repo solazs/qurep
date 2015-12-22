@@ -3,6 +3,8 @@
 namespace SnowflakeCo\DataBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use QuReP\ApiBundle\Annotations\Entity\Type as PropType;
+use Symfony\Component\Form\Extension\Core\Type as FormType;
 
 /**
  * RoomEntry
@@ -36,6 +38,7 @@ class RoomEntry
      * @var string
      *
      * @ORM\Column(name="title", type="string", length=255)
+     * @PropType(FormType\TextType::class)
      */
     private $title;
 
@@ -43,6 +46,7 @@ class RoomEntry
      * @var string
      *
      * @ORM\Column(name="subtitle", type="string", length=255)
+     * @PropType(FormType\TextType::class)
      */
     private $subtitle;
 
@@ -50,6 +54,7 @@ class RoomEntry
      * @var string
      *
      * @ORM\Column(name="content", type="text")
+     * @PropType(FormType\TextareaType::class)
      */
     private $content;
 
@@ -57,6 +62,7 @@ class RoomEntry
      * @var \DateTime
      *
      * @ORM\Column(name="createdAt", type="datetime")
+     * @PropType(FormType\DateTimeType::class)
      */
     private $createdAt;
 
@@ -64,6 +70,7 @@ class RoomEntry
      * @var \DateTime
      *
      * @ORM\Column(name="updatedAt", type="datetime")
+     * @PropType(FormType\DateTimeType::class)
      */
     private $updatedAt;
 

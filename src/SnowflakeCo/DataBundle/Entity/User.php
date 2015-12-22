@@ -4,6 +4,8 @@ namespace SnowflakeCo\DataBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use QuReP\ApiBundle\Annotations\Entity\Type as PropType;
+use Symfony\Component\Form\Extension\Core\Type as FormType;
 
 /**
  * User
@@ -36,6 +38,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="username", type="string", length=255)
+     * @PropType(FormType\TextType::class)
      */
     private $username;
 
@@ -43,6 +46,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="displayName", type="string", length=255)
+     * @PropType(FormType\TextType::class)
      */
     private $displayName;
 
@@ -50,6 +54,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="email", type="string", length=255)
+     * @PropType(FormType\EmailType::class)
      */
     private $email;
 
@@ -64,6 +69,7 @@ class User
      * @var \DateTime
      *
      * @ORM\Column(name="createdAt", type="datetime")
+     * @PropType(FormType\DateTimeType::class)
      */
     private $createdAt;
 
@@ -71,6 +77,7 @@ class User
      * @var \DateTime
      *
      * @ORM\Column(name="updatedAt", type="datetime")
+     * @PropType(FormType\DateTimeType::class)
      */
     private $updatedAt;
 
