@@ -26,7 +26,12 @@ class DataHandler
 
     function get($entityClass, $id = 0)
     {
-        return $this->em->getRepository($entityClass)->find($id);
+        $data = $this->em->getRepository($entityClass)->find($id);
+        if (!$data)
+        {
+            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
+        }
+        return $data;
     }
 
     function getAll($entityClass)

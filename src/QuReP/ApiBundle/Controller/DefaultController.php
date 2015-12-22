@@ -7,7 +7,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DefaultController extends Controller
 {
@@ -23,10 +22,6 @@ class DefaultController extends Controller
         switch ($action['action']) {
             case Action::GET_SINGLE:
                 $data = $dataHandler->get($action['class'], $action['id']);
-                if (!$data)
-                {
-                    throw new NotFoundHttpException('Entity with id ' . $action['id'] . ' was not found in the database.');
-                }
                 break;
             case Action::GET_COLLECTION:
                 $data = $dataHandler->getAll($action['class']);
