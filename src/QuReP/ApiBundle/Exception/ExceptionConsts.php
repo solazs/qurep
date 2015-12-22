@@ -11,6 +11,6 @@ namespace QuReP\ApiBundle\Exception;
 
 class ExceptionConsts
 {
-    const NOTFOUNDERROR = 'NotFoundError';
-    const ROUTINGERROR = 'RoutingError';
+    const NOTFOUNDERROR = '404';
+    const ROUTINGERROR = '1000';
 }
