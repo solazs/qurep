@@ -9,9 +9,7 @@
 namespace QuReP\ApiBundle\Resources;
 
 
-use SplEnum;
-
-class Action extends SplEnum
+abstract class Action
 {
     const GET_SINGLE = 0;
     const GET_COLLECTION = 1;

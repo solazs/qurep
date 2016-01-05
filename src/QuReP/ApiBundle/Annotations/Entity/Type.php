@@ -18,16 +18,16 @@ use Doctrine\Common\Annotations\AnnotationException;
 
 /**
  * @Annotation
- * @Target("METHOD")
+ * @Target("PROPERTY")
  */
 class Type
 {
     private $type;
     public function __construct($type)
     {
-        $this->type = $type;
-        if (!class_exists($type)){
-            throw new AnnotationException('Class ' . $type . ' does not exists.');
+        $this->type = $type['value'];
+        if (!class_exists($this->type)){
+            throw new AnnotationException('Class ' . $this->type . ' does not exists.');
         }
     }
 
