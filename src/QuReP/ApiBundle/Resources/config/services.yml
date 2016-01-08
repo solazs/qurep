@@ -7,6 +7,13 @@ services:
         class: QuReP\ApiBundle\Services\DataHandler
         arguments: [ "@doctrine.orm.entity_manager" ]
     qurep_api.exception_listener:
-      class: QuReP\ApiBundle\EventListener\ExceptionListener
-      tags:
+        class: QuReP\ApiBundle\EventListener\ExceptionListener
+        tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
+    qurep_api.entity_form_builder:
+        class: QuReP\ApiBundle\Services\EntityFormBuilder
+        arguments: [ "@form.factory" ]
+        lazy: true
+    qurep_api.cached_entity_form_builder:
+            class: QuReP\ApiBundle\Services\CachedEntityFormBuilder
+            arguments: [ "@qurep_api.entity_form_builder", "@doctrine_cache.providers.form_type_cache" ]

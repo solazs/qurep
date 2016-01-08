@@ -13,26 +13,61 @@ namespace QuReP\ApiBundle\Annotations\Entity;
 
 
 use Doctrine\Common\Annotations\Annotation;
-use Doctrine\Common\Annotations\Annotation\Target;
 use Doctrine\Common\Annotations\AnnotationException;
 
 /**
  * @Annotation
- * @Target("PROPERTY")
+ * @Annotation\Target("PROPERTY")
  */
 class Type
 {
+    /** @var string
+     *  @Annotation\Required()
+     */
     private $type;
-    public function __construct($type)
+    /** @var array */
+    private $options;
+    /** @var string */
+    private $label;
+    public function __construct($values)
     {
-        $this->type = $type['value'];
+        $this->type = $values['type'];
         if (!class_exists($this->type)){
             throw new AnnotationException('Class ' . $this->type . ' does not exists.');
         }
+        if (array_key_exists('options', $values)) {
+            $this->options = $values['options'];
+        } else {
+            $this->options = null;
+        }
+        if (array_key_exists('label', $values)) {
+            $this->label = $values['label'];
+        } else {
+            $this->label = null;
+        }
     }
 
-    public function getType()
+    /**
+     * @return string
+     */
+    public function getType() : string
     {
         return $this->type;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions() : array
+    {
+        return $this->options;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLabel() : string
+    {
+        return $this->label;
     }
 }
