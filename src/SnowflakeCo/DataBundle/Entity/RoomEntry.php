@@ -28,7 +28,7 @@ class RoomEntry
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="roomEntries")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="roomEntries", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private $user;

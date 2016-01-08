@@ -34,6 +34,9 @@ class QuRePApiExtension extends Extension
 
         $routeAnalyzerServiceDefinition = $container->getDefinition('qurep_api.route_analyzer');
         $routeAnalyzerServiceDefinition->addMethodCall('setConfig', array($config['entities']));
+
+        $routeAnalyzerServiceDefinition = $container->getDefinition('qurep_api.entity_form_builder');
+        $routeAnalyzerServiceDefinition->addMethodCall('setConfig', array($config['entities']));
     }
 
     public function getAlias()

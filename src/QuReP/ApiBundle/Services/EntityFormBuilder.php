@@ -9,9 +9,14 @@
 namespace QuReP\ApiBundle\Services;
 
 
+use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Cache\ApcuCache;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OneToOne;
 use QuReP\ApiBundle\Annotations\Entity\Type;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -20,6 +25,12 @@ class EntityFormBuilder
     protected $reader;
     protected $formFactory;
     protected $cache;
+    protected $entities;
+
+    public function setConfig($entities)
+    {
+        $this->entities = $entities;
+    }
 
     public function __construct(FormFactory $formFactory)
     {
@@ -48,38 +59,103 @@ class EntityFormBuilder
                 'csrf_protection' => false
             ]);
         foreach ($properties as $property) {
-            $formBuilder->add(
-                $property['label'],
-                $property['type'],
-                $property['options'] === null ? [] : $property['options']);
+            switch ($property['propType']) {
+                case 'prop':
+                    $formBuilder->add(
+                        $property['label'],
+                        $property['type'],
+                        $property['options'] === null ? [] : $property['options']
+                    );
+                    break;
+                case 'single':
+                    $formBuilder->add(
+                        array_key_exists('label', $property) ? $property['label'] : $property['entityName'],
+                        EntityType::class,
+                        [
+                            'class' => $property['class']
+                        ]
+                    );
+                    break;
+                case 'plural':
+                    $formBuilder->add(
+                        array_key_exists('label', $property) ? $property['label'] : $property['entityName'],
+                        EntityType::class,
+                        [
+                            'multiple' => true,
+                            'class' => $property['class']
+                        ]
+                    );
+                    break;
+            }
         }
 
         return $formBuilder->getForm();
 
     }
 
-    private function getProps($entityClass) : array
+    protected function getProps($entityClass) : array
     {
         $properties = [];
         $refClass = new \ReflectionClass($entityClass);
 
         $entityProperties = $refClass->getProperties();
         foreach ($entityProperties as $entityProperty) {
+            $field = [];
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof Type) {
-                    $field = [
-                        "label" => $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getType(),
-                        "options" => $annotation->getOptions(),
-                        "type" => $annotation->getType()
-                    ];
-                    if (!in_array($field, $properties)) {
-                        array_push($properties, $field);
-                    }
+                    $field["label"] =
+                        $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getType();
+                    $field["options"] = $annotation->getOptions();
+                    $field["type"] = $annotation->getType();
+                    $field["propType"] = "prop";
+                } elseif ($annotation instanceof OneToOne) {
+                    $class = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                    $field["propType"] = "single";
+                    $field['class'] = $class;
+                    $field['entityName'] = $this->getEntityName($class);
+                } elseif ($annotation instanceof OneToMany) {
+                    $class = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                    $field["propType"] = "plural";
+                    $field['class'] = $class;
+                    $field['entityName'] = $this->getEntityName($class);
+                } elseif ($annotation instanceof ManyToOne) {
+                    $class = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                    $field["propType"] = "single";
+                    $field['class'] = $class;
+                    $field['entityName'] = $this->getEntityName($class);
+                }
+
+                if (!in_array($field, $properties)) {
+                    array_push($properties, $field);
                 }
             }
         }
         return $properties;
     }
 
+    protected
+    function getEntityClass(
+        $entityClass,
+        $className
+    ) {
+        if (class_exists($className)) {
+            return $className;
+        } else {
+            $fullClassName = substr($entityClass, 0, strrpos($entityClass, '\\')) . '\\' . $className;
+            if (class_exists($fullClassName)) {
+                return substr($entityClass, 0, strrpos($entityClass, '\\')) . '\\' . $className;
+            } else {
+                throw new AnnotationException("Cannot find related entity '" . $className . "' in " . $entityClass);
+            }
+        }
+    }
+
+    protected
+    function getEntityName(
+        $entityClass
+    ) {
+        $entity = array_search($entityClass, $this->entities);
+        return $entity['entity_name'];
+    }
 
 }

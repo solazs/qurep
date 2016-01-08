@@ -60,7 +60,7 @@ class User
     /**
      * @var ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="RoomEntry", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="RoomEntry", mappedBy="user", fetch="EXTRA_LAZY")
      */
     private $roomEntries;
 
