@@ -32,8 +32,10 @@ class Type
     public function __construct($values)
     {
         $this->type = $values['type'];
-        if (!class_exists($this->type)){
+        if (!class_exists('\Symfony\Component\Form\Extension\Core\Type\\' . $this->type)) {
             throw new AnnotationException('Class ' . $this->type . ' does not exists.');
+        } else {
+            $this->type = '\Symfony\Component\Form\Extension\Core\Type\\' . $this->type;
         }
         if (array_key_exists('options', $values)) {
             $this->options = $values['options'];
