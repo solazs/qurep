@@ -2,16 +2,17 @@
 
 namespace QuReP\ApiBundle\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use QuReP\ApiBundle\Tests\RestTestCase;
 
-class DefaultControllerTest extends WebTestCase
+class DefaultControllerTest extends RestTestCase
 {
     public function testIndex()
     {
         $client = static::createClient();
 
-        $crawler = $client->request('GET', '/hello/Fabien');
+        $data = $client->request('GET', '/users/1');
 
-        $this->assertTrue($crawler->filter('html:contains("Hello Fabien")')->count() > 0);
+        $this->assertJsonResponse($client->getResponse(), 200);
+        $this->assertEquals('solazs', json_decode($client->getResponse()->getContent(), true)['username']);
     }
 }
