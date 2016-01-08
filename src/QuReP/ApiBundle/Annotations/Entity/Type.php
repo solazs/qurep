@@ -22,13 +22,14 @@ use Doctrine\Common\Annotations\AnnotationException;
 class Type
 {
     /** @var string
-     *  @Annotation\Required()
+     * @Annotation\Required()
      */
     private $type;
     /** @var array */
     private $options;
     /** @var string */
     private $label;
+
     public function __construct($values)
     {
         $this->type = $values['type'];

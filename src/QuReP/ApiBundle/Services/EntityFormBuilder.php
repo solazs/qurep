@@ -26,10 +26,11 @@ class EntityFormBuilder implements IEntityFormBuilder
         $this->formFactory = $formFactory;
     }
 
-    public function getForm(string $entityClass): Form {
+    public function getForm(string $entityClass): Form
+    {
         $properties = $this->getProps($entityClass);
 
-        if (count($properties)<=1){
+        if (count($properties) <= 1) {
             throw new HttpException(500, "There are no properties annotated with Type in " . $entityClass);
         }
 
@@ -45,19 +46,21 @@ class EntityFormBuilder implements IEntityFormBuilder
 
     }
 
-    private function getProps($entityClass) : array {
+    private function getProps($entityClass) : array
+    {
         $properties = [];
         $refClass = new \ReflectionClass($entityClass);
 
         $entityProperties = $refClass->getProperties();
         foreach ($entityProperties as $entityProperty) {
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
-                if ($annotation instanceof Type){
+                if ($annotation instanceof Type) {
                     $field = [
                         "label" => $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getType(),
                         "options" => $annotation->getOptions(),
-                        "type" => $annotation->getType()];
-                    if (!in_array($field, $properties)){
+                        "type" => $annotation->getType()
+                    ];
+                    if (!in_array($field, $properties)) {
                         array_push($properties, $field);
                     }
                 }
@@ -65,7 +68,6 @@ class EntityFormBuilder implements IEntityFormBuilder
         }
         return $properties;
     }
-
 
 
 }

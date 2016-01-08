@@ -25,7 +25,7 @@ class CachedEntityFormBuilder implements IEntityFormBuilder
 
     public function getForm(string $entityClass) : Form
     {
-        if ($this->cache->contains($entityClass)){
+        if ($this->cache->contains($entityClass)) {
             return clone($this->cache->fetch($entityClass));
         } else {
             $form = $this->entityFormBuilder->getForm($entityClass);

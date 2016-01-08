@@ -43,13 +43,13 @@ class ExceptionListener
 
             $event->setResponse($response);
         } else {
-        // catch others
-        $response = new Response(json_encode(array(
-            'message' => $exception->getMessage(),
-            'code' => $exception->getCode()
-        )));
+            // catch others
+            $response = new Response(json_encode(array(
+                'message' => $exception->getMessage(),
+                'code' => $exception->getCode()
+            )));
 
-        $event->setResponse($response);
-    }
+            $event->setResponse($response);
+        }
     }
 }

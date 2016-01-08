@@ -27,8 +27,7 @@ class DataHandler
     function get($entityClass, $id = 0)
     {
         $data = $this->em->getRepository($entityClass)->find($id);
-        if (!$data)
-        {
+        if (!$data) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
         return $data;
@@ -42,7 +41,7 @@ class DataHandler
     function delete($entityClass, $id = 0)
     {
         $entity = $this->em->getRepository($entityClass)->find($id);
-        if (!$entity){
+        if (!$entity) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
         $this->em->remove($entity);
@@ -51,11 +50,11 @@ class DataHandler
 
     function deleteCollection($entityClass, Request $request)
     {
-        if ($content = $request->getContent()){
+        if ($content = $request->getContent()) {
             throw new BadRequestHttpException('no "data" object found in content', 400);
         } else {
             $data = json_decode($content, true);
-            if (count($data) === 0){
+            if (count($data) === 0) {
                 throw new BadRequestHttpException('"data" has no elements', 400);
             }
             $this->em->createQueryBuilder()
