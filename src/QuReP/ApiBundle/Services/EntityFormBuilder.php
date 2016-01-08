@@ -26,7 +26,7 @@ class EntityFormBuilder implements IEntityFormBuilder
         $this->formFactory = $formFactory;
     }
 
-    public function getForm(string $entityClass) : Form
+    public function getForm($entityClass)
     {
         $properties = $this->getProps($entityClass);
 

@@ -17,13 +17,13 @@ class CachedEntityFormBuilder implements IEntityFormBuilder
     protected $entityFormBuilder;
     protected $cache;
 
-    public function __construct(IEntityFormBuilder $entityFormBuilder, ApcuCache $apcuCache)
+    public function __construct(EntityFormBuilder $entityFormBuilder, ApcuCache $apcuCache)
     {
         $this->entityFormBuilder = $entityFormBuilder;
         $this->cache = $apcuCache;
     }
 
-    public function getForm(string $entityClass) : Form
+    public function getForm($entityClass)
     {
         if ($this->cache->contains($entityClass)) {
             return clone($this->cache->fetch($entityClass));

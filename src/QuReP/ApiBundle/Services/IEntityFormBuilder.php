@@ -13,5 +13,5 @@ use Symfony\Component\Form\Form;
 
 interface IEntityFormBuilder
 {
-    public function getForm(string $entityClass) : Form;
+    public function getForm($entityClass);
 }
