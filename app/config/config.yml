@@ -58,13 +58,6 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore
         auto_mapping: true
 
-doctrine_cache:
-    providers:
-        form_type_cache:
-            type: apc
-            namespace: qurep_form_type_
-
-
 # Swiftmailer Configuration
 swiftmailer:
     transport: "%mailer_transport%"

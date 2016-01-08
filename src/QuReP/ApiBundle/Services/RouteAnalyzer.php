@@ -70,7 +70,7 @@ class RouteAnalyzer
                 if ($isBulk) {
                     $action = Action::UPDATE_COLLECTION;
                 } else {
-                    if ($id = null) {
+                    if ($id == null) {
                         $action = Action::POST_SINGLE;
                     } else {
                         $action = Action::UPDATE_SINGLE;
@@ -81,7 +81,7 @@ class RouteAnalyzer
                     if ($isBulk) {
                         $action = Action::DELETE_COLLECTION;
                     } else {
-                        if ($id = null) {
+                        if ($id == null) {
                             throw new RouteException('Invalid action! Use entity/bulk to DELETE multiple objects or supply ID');
                         } else {
                             $action = Action::DELETE_SINGLE;

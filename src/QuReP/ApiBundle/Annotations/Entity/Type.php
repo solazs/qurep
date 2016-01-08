@@ -32,6 +32,9 @@ class Type
 
     public function __construct($values)
     {
+        if (!array_key_exists('type', $values)) {
+            throw new AnnotationException('type property is required for Type Annotation');
+        }
         $this->type = $values['type'];
         if (!class_exists('\Symfony\Component\Form\Extension\Core\Type\\' . $this->type)) {
             throw new AnnotationException('Class ' . $this->type . ' does not exists.');
@@ -53,7 +56,7 @@ class Type
     /**
      * @return string
      */
-    public function getType() : string
+    public function getType()
     {
         return $this->type;
     }
@@ -61,7 +64,7 @@ class Type
     /**
      * @return array
      */
-    public function getOptions() : array
+    public function getOptions()
     {
         return $this->options;
     }
@@ -69,7 +72,7 @@ class Type
     /**
      * @return string
      */
-    public function getLabel() : string
+    public function getLabel()
     {
         return $this->label;
     }

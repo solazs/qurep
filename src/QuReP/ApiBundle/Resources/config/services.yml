@@ -5,7 +5,7 @@ services:
         class: QuReP\ApiBundle\Services\RouteAnalyzer
     qurep_api.data_handler:
         class: QuReP\ApiBundle\Services\DataHandler
-        arguments: [ "@doctrine.orm.entity_manager" ]
+        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder" ]
     qurep_api.exception_listener:
         class: QuReP\ApiBundle\EventListener\ExceptionListener
         tags:
@@ -13,8 +13,4 @@ services:
     qurep_api.entity_form_builder:
         class: QuReP\ApiBundle\Services\EntityFormBuilder
         arguments: [ "@form.factory" ]
-        lazy: true
-    qurep_api.cached_entity_form_builder:
-        class: QuReP\ApiBundle\Services\CachedEntityFormBuilder
-        arguments: [ "@qurep_api.entity_form_builder", "@doctrine_cache.providers.form_type_cache" ]
         lazy: true

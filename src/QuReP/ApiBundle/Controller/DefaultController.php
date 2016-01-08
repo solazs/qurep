@@ -5,13 +5,16 @@ namespace QuReP\ApiBundle\Controller;
 use QuReP\ApiBundle\Resources\Action;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class DefaultController extends Controller
 {
     /**
      * @Route("/{apiRoute}", requirements={"apiRoute"=".+"})
+     * @param Request $request
      * @param string $apiRoute
      * @return array
      */
@@ -27,20 +30,32 @@ class DefaultController extends Controller
                 $data = $dataHandler->getAll($action['class']);
                 break;
             case Action::UPDATE_SINGLE:
-                $data = null;
+                $postData = json_decode($request->getContent(), true);
+                if ($postData === null) {
+                    throw new BadRequestHttpException('Invalid JSON or null content');
+                }
+                $data = $dataHandler->update($action['class'], $action['id'], $postData);
                 break;
             case Action::UPDATE_COLLECTION:
-                $data = null;
+                $postData = json_decode($request->getContent(), true);
+                if ($postData === null) {
+                    throw new BadRequestHttpException('Invalid JSON or null content');
+                }
+                $data = $dataHandler->bulkUpdate($action['class'], $postData);
                 break;
             case Action::POST_SINGLE:
-                $data = null;
+                $postData = json_decode($request->getContent(), true);
+                if ($postData === null) {
+                    throw new BadRequestHttpException('Invalid JSON or null content');
+                }
+                $data = $dataHandler->create($action['class'], $postData);
                 break;
             case Action::DELETE_SINGLE:
                 $dataHandler->delete($action['class'], $action['id']);
                 $data = null;
                 break;
             case Action::DELETE_COLLECTION:
-                $dataHandler->deleteCollection($action['class'], $request);
+                $dataHandler->deleteCollection($action['class'], $request->request->all());
                 $data = null;
                 break;
             default:
@@ -48,6 +63,10 @@ class DefaultController extends Controller
         }
 
         $response = new Response();
+
+        if ($data instanceof Form) {
+            //readable error msg
+        }
 
         if ($data !== null) {
             $jsonData = $this->get('jms_serializer')->serialize($data, 'json');
