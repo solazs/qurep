@@ -82,7 +82,8 @@ class EntityFormBuilder
                         EntityType::class,
                         [
                             'multiple' => true,
-                            'class' => $property['class']
+                            'class' => $property['class'],
+                            'choice_label' => 'id'
                         ]
                     );
                     break;
