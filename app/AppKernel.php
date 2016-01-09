@@ -18,7 +18,6 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new QuReP\ApiBundle\QuRePApiBundle(),
-            new SnowflakeCo\DataBundle\SnowflakeCoDataBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
