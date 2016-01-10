@@ -69,7 +69,7 @@ class DefaultController extends Controller
         }
 
         if ($data !== null) {
-            $jsonData = $this->get('jms_serializer')->serialize($data, 'json');
+            $jsonData = json_encode($data);
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
         } else {
