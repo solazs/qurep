@@ -14,3 +14,18 @@ web_profiler:
 
 swiftmailer:
     disable_delivery: true
+
+doctrine:
+    orm:
+        auto_generate_proxy_classes: %kernel.debug%
+        auto_mapping: false
+        mappings:
+            name:
+                type: php
+                dir: %kernel.root_dir%/../src/QuReP/ApiBundle/Tests/Entity/User
+    dbal:
+        host:     localhost
+        dbname:   qurep_testdb
+        user:     root
+        password:
+liip_functional_test: ~

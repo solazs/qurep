@@ -41,6 +41,10 @@ monolog:
         #    type:   chromephp
         #    level:  info
 
+#qurep_api:
+#    entities:
+#      - entity_name: qurep.testing_user
+#        class: QuReP\ApiBundle\Tests\Entity\User
 
 #swiftmailer:
 #    delivery_address: me@example.com
