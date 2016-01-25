@@ -4,9 +4,8 @@
     "type": "library",
     "autoload": {
         "psr-4": {
-            "": "src/"
-        },
-        "classmap": [ "app/AppKernel.php", "app/AppCache.php" ]
+            "Solazs\\QuReP\\": "src/ApiBundle"
+        }
     },
     "require": {
         "php": ">=7.0.0",
