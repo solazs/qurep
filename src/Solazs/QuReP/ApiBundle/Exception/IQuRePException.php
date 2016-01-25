@@ -6,7 +6,7 @@
  * Time: 0:25
  */
 
-namespace QuReP\ApiBundle\Exception;
+namespace Solazs\QuReP\ApiBundle\Exception;
 
 
 interface IQuRePException

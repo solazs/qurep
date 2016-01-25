@@ -2,15 +2,15 @@ parameters:
 
 services:
     qurep_api.route_analyzer:
-        class: QuReP\ApiBundle\Services\RouteAnalyzer
+        class: Solazs\QuReP\ApiBundle\Services\RouteAnalyzer
     qurep_api.data_handler:
-        class: QuReP\ApiBundle\Services\DataHandler
+        class: Solazs\QuReP\ApiBundle\Services\DataHandler
         arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder" ]
     qurep_api.exception_listener:
-        class: QuReP\ApiBundle\EventListener\ExceptionListener
+        class: Solazs\QuReP\ApiBundle\EventListener\ExceptionListener
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
     qurep_api.entity_form_builder:
-        class: QuReP\ApiBundle\Services\EntityFormBuilder
+        class: Solazs\QuReP\ApiBundle\Services\EntityFormBuilder
         arguments: [ "@form.factory" ]
         lazy: true

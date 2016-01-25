@@ -6,11 +6,11 @@
  * Time: 0:27
  */
 
-namespace QuReP\ApiBundle\EventListener;
+namespace Solazs\QuReP\ApiBundle\EventListener;
 
 
-use QuReP\ApiBundle\Exception\ExceptionConsts;
-use QuReP\ApiBundle\Exception\IQuRePException;
+use Solazs\QuReP\ApiBundle\Exception\ExceptionConsts;
+use Solazs\QuReP\ApiBundle\Exception\IQuRePException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

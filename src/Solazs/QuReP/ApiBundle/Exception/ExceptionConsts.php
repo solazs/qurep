@@ -6,7 +6,7 @@
  * Time: 19:05
  */
 
-namespace QuReP\ApiBundle\Exception;
+namespace Solazs\QuReP\ApiBundle\Exception;
 
 
 class ExceptionConsts

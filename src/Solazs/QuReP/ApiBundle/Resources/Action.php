@@ -6,7 +6,7 @@
  * Time: 0:08
  */
 
-namespace QuReP\ApiBundle\Resources;
+namespace Solazs\QuReP\ApiBundle\Resources;
 
 
 abstract class Action

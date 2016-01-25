@@ -9,7 +9,7 @@
  * For available types see http://symfony.com/doc/current/reference/forms/types.html
  */
 
-namespace QuReP\ApiBundle\Annotations\Entity;
+namespace Solazs\QuReP\ApiBundle\Annotations\Entity;
 
 
 use Doctrine\Common\Annotations\Annotation;

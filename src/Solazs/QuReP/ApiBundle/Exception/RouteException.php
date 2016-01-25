@@ -6,7 +6,7 @@
  * Time: 23:55
  */
 
-namespace QuReP\ApiBundle\Exception;
+namespace Solazs\QuReP\ApiBundle\Exception;
 
 
 class RouteException extends \Exception implements IQuRePException

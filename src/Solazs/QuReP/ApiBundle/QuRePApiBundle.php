@@ -1,6 +1,6 @@
 <?php
 
-namespace QuReP\ApiBundle;
+namespace Solazs\QuReP\ApiBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 

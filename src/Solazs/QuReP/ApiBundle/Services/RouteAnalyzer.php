@@ -6,11 +6,11 @@
  * Time: 21:27
  */
 
-namespace QuReP\ApiBundle\Services;
+namespace Solazs\QuReP\ApiBundle\Services;
 
 
-use QuReP\ApiBundle\Exception\RouteException;
-use QuReP\ApiBundle\Resources\Action;
+use Solazs\QuReP\ApiBundle\Exception\RouteException;
+use Solazs\QuReP\ApiBundle\Resources\Action;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 

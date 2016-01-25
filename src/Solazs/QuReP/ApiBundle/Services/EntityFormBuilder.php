@@ -6,7 +6,7 @@
  * Time: 23:41
  */
 
-namespace QuReP\ApiBundle\Services;
+namespace Solazs\QuReP\ApiBundle\Services;
 
 
 use Doctrine\Common\Annotations\AnnotationException;
@@ -15,7 +15,7 @@ use Doctrine\Common\Cache\ApcuCache;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
-use QuReP\ApiBundle\Annotations\Entity\Type;
+use Solazs\QuReP\ApiBundle\Annotations\Entity\Type;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;

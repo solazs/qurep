@@ -6,7 +6,7 @@
  * Time: 20:51
  */
 
-namespace QuReP\ApiBundle\Services;
+namespace Solazs\QuReP\ApiBundle\Services;
 
 
 use Doctrine\ORM\EntityManager;

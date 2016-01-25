@@ -1,6 +1,6 @@
 <?php
 
-namespace QuReP\ApiBundle\DependencyInjection;
+namespace Solazs\QuReP\ApiBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;

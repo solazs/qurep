@@ -1,8 +1,8 @@
 <?php
 
-namespace QuReP\ApiBundle\Controller;
+namespace Solazs\QuReP\ApiBundle\Controller;
 
-use QuReP\ApiBundle\Resources\Action;
+use Solazs\QuReP\ApiBundle\Resources\Action;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Form\Form;
