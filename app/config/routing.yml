@@ -1,9 +1,0 @@
-snowflake_co_data:
-    resource: "@SnowflakeCoDataBundle/Controller/"
-    type:     annotation
-    prefix:   /
-
-qu_re_p_api:
-    resource: "@QuRePApiBundle/Controller/"
-    type:     annotation
-    prefix:   /
