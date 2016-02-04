@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class DefaultController extends Controller
+class ApiController extends Controller
 {
     /**
      * @Route("/{apiRoute}", requirements={"apiRoute"=".+"})
