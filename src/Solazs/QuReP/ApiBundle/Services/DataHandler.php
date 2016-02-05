@@ -52,7 +52,7 @@ class DataHandler
 
         /** @var Form $form */
         $form = $this->entityFormBuilder->getForm($entityClass, $entity);
-        $form->submit($postData);
+        $form->submit($postData, false);
 
         if ($form->isValid()) {
             $this->em->persist($entity);
