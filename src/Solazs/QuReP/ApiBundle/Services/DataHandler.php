@@ -82,6 +82,9 @@ class DataHandler
                 return $this->create($entityClass, $item);
             }
         }
+
+        // Should not reach this
+        return null;
     }
 
     function create(string $entityClass, array $postData = array())

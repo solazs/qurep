@@ -72,7 +72,8 @@ class EntityFormBuilder
                         array_key_exists('label', $property) ? $property['label'] : $property['entityName'],
                         EntityType::class,
                         [
-                            'class' => $property['class']
+                            'class' => $property['class'],
+                            'choice_label' => 'id'
                         ]
                     );
                     break;
@@ -105,7 +106,7 @@ class EntityFormBuilder
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof Type) {
                     $field["label"] =
-                        $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getType();
+                        $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
                     $field["options"] = $annotation->getOptions();
                     $field["type"] = $annotation->getType();
                     $field["propType"] = "prop";
