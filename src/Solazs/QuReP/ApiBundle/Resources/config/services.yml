@@ -14,3 +14,6 @@ services:
         class: Solazs\QuReP\ApiBundle\Services\EntityFormBuilder
         arguments: [ "@form.factory" ]
         lazy: true
+    qurep_api.form_error_serializer:
+        class: Solazs\QuReP\ApiBundle\Services\FormErrorsSerializer
+        lazy: true
