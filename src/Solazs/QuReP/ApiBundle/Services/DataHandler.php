@@ -10,6 +10,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -26,18 +27,44 @@ class DataHandler
         $this->entityFormBuilder = $entityFormBuilder;
     }
 
+    protected function buildFilterSubQuery(QueryBuilder $qb, array $filters, array &$parameters)
+    {
+        $conditions = [];
+        foreach ($filters as $filterGrp) {
+            $andConditions = [];
+            foreach ($filterGrp as $filter) {
+                $andConditions[] = $qb->expr()->$filter['operand']($filter["prop"], ":" . $filter['prop']);
+                $parameters[":" . $filter['prop']] = $filter['value'];
+            }
+            $andConditions = call_user_func_array([$qb->expr(), "andx"], $andConditions);
+            $conditions[] = $andConditions;
+        }
+        $conditions = call_user_func_array(array($qb->expr(), "orx"), $conditions);
+
+        return $conditions;
+    }
+
     function get(string $entityClass, int $id = 0)
     {
         $data = $this->em->getRepository($entityClass)->find($id);
+
         if (!$data) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
         return $data;
     }
 
-    function getAll(string $entityClass)
+    function getAll(string $entityClass, array $filters = array())
     {
-        return $this->em->getRepository($entityClass)->findAll();
+        $parameters = [];
+        $qb = $this->em->createQueryBuilder();
+        $conditions = $this->buildFilterSubQuery($qb, $filters, $parameters);
+        $qb->select("ent")
+            ->from($entityClass, "ent")
+            ->where($conditions)
+            ->setParameters($parameters);
+        $data = $qb->getQuery()->getResult();
+        return $data;
     }
 
     function update(string $entityClass, $id = 0, array $postData = array())

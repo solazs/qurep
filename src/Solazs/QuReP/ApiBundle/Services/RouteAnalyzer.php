@@ -12,6 +12,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 use Solazs\QuReP\ApiBundle\Exception\RouteException;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 
 class RouteAnalyzer
@@ -98,5 +99,59 @@ class RouteAnalyzer
         }
 
         return array('class' => $class, 'action' => $action, 'id' => $id);
+    }
+
+    public function extractFilters($entityClass)
+    {
+        $queryValues = $this->fetchGetValuesFor("filter");
+        $filters = array();
+
+        foreach ($queryValues as $queryValue) {
+            $bits = explode(";", $queryValue);
+            $subFilter = array();
+            foreach ($bits as $bit) {
+                $subFilter[] = $this->explodeAndCheckFilter($bit, $entityClass);
+            }
+            $filters[] = $subFilter;
+        }
+
+    }
+
+    protected function explodeAndCheckFilter($filter, $entitClass)
+    {
+        $bits = explode(",", $filter);
+        if (count($bits) > 3) {
+            throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
+        } elseif (count($bits) < 3) {
+            if ($bits[1] != "isnull") {
+                throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
+            } else {
+
+
+                // TODO: Check EVERYTHING and throw errors
+
+                return array("prop" => $bits[0], "operand" => $bits[1], "value" => array_key_exists(2, $bits) ? $bits[2] : null);
+            }
+        }
+    }
+
+    /**
+     * As PHP (with Symfony following its lead) does not handle multiple GET parameters
+     * with the same name, a bit of tinkering is needed to be able to properly implement filters.
+     * @param $key string name of the parameter to be extracted
+     * @return array array of values for the key specified (empty if not found)
+     */
+    protected function fetchGetValuesFor($key)
+    {
+        $queryData = explode('&', $_SERVER['QUERY_STRING']);
+        $values = array();
+
+        foreach ($queryData as $param) {
+            list($name, $value) = explode('=', $param, 2);
+            if ($name == $key) {
+                $values[] = urldecode($value);
+            }
+        }
+        return $values;
     }
 }

@@ -20,14 +20,16 @@ class ApiController extends Controller
      */
     public function indexAction(Request $request, $apiRoute)
     {
-        $action = $this->get('qurep_api.route_analyzer')->getActionAndEntity($request, $apiRoute);
+        $routeAnalyzer = $this->get('qurep_api.route_analyzer');
+        $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
         $dataHandler = $this->get('qurep_api.data_handler');
+        $filters = $routeAnalyzer->extractFilters($action['class']);
         switch ($action['action']) {
             case Action::GET_SINGLE:
                 $data = $dataHandler->get($action['class'], $action['id']);
                 break;
             case Action::GET_COLLECTION:
-                $data = $dataHandler->getAll($action['class']);
+                $data = $dataHandler->getAll($action['class'], $filters);
                 break;
             case Action::UPDATE_SINGLE:
                 $postData = json_decode($request->getContent(), true);
@@ -63,14 +65,6 @@ class ApiController extends Controller
         }
 
         $response = new Response();
-
-        if ($data instanceof Form) {
-            $response->getStatusCode(400);
-            $data = array(
-                "errors" => $this->get('qurep_api.form_error_serializer')->serializeFormErrors($data),
-                "message" => "The form returned errors"
-            );
-        }
 
         if ($data !== null) {
             $jsonData = $this->get('jms_serializer')->serialize($data, "json");
