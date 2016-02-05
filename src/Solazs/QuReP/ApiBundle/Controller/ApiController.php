@@ -69,7 +69,7 @@ class ApiController extends Controller
         }
 
         if ($data !== null) {
-            $jsonData = json_encode($data);
+            $jsonData = $this->get('jms_serializer')->serialize($data, "json");
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
         } else {
