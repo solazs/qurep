@@ -126,7 +126,7 @@ class EntityFormBuilder
                     $field['entityName'] = $this->getEntityName($class);
                 }
 
-                if (!in_array($field, $properties)) {
+                if (!in_array($field, $properties) && $field != []) {
                     array_push($properties, $field);
                 }
             }
