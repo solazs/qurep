@@ -114,12 +114,21 @@ class EntityFormBuilder
             }
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof OneToOne) {
+                    if (!array_key_exists('label', $field)) {
+                        $field['label'] = $entityProperty->getName();
+                    }
                     $field["propType"] = "single";
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof OneToMany) {
+                    if (!array_key_exists('label', $field)) {
+                        $field['label'] = $entityProperty->getName();
+                    }
                     $field["propType"] = "plural";
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof ManyToOne) {
+                    if (!array_key_exists('label', $field)) {
+                        $field['label'] = $entityProperty->getName();
+                    }
                     $field["propType"] = "single";
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 }
