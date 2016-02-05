@@ -123,16 +123,20 @@ class RouteAnalyzer
         if (count($bits) > 3) {
             throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
         } elseif (count($bits) < 3) {
-            if ($bits[1] != "isnull") {
+            if ($bits[1] != "isnull" || $bits[1] != "isnotnull") {
                 throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
             } else {
-
+                // isnull or isnotnull
 
                 // TODO: Check EVERYTHING and throw errors
 
-                return array("prop" => $bits[0], "operand" => $bits[1], "value" => array_key_exists(2, $bits) ? $bits[2] : null);
+
             }
+        } else {
+            // TODO: Check EVERYTHING and throw errors
         }
+
+        return array("prop" => $bits[0], "operand" => $bits[1], "value" => array_key_exists(2, $bits) ? $bits[2] : null);
     }
 
     /**
