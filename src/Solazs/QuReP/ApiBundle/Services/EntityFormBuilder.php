@@ -152,12 +152,14 @@ class EntityFormBuilder
         }
     }
 
-    protected
-    function getEntityName(
-        $entityClass
-    ) {
-        $entity = array_search($entityClass, $this->entities);
-        return $entity['entity_name'];
+    protected function getEntityName($entityClass)
+    {
+        foreach ($this->entities as $entity) {
+            if ($entity['class'] == $entityClass) {
+                return $entity['entity_name'];
+            }
+        }
+        return null;
     }
 
 }
