@@ -69,7 +69,7 @@ class EntityFormBuilder
                     break;
                 case 'single':
                     $formBuilder->add(
-                        array_key_exists('label', $property) ? $property['label'] : $property['entityName'],
+                        $property['label'],
                         EntityType::class,
                         [
                             'class' => $property['class'],
@@ -79,7 +79,7 @@ class EntityFormBuilder
                     break;
                 case 'plural':
                     $formBuilder->add(
-                        array_key_exists('label', $property) ? $property['label'] : $property['entityName'],
+                        $property['label'],
                         EntityType::class,
                         [
                             'multiple' => true,
@@ -110,26 +110,23 @@ class EntityFormBuilder
                     $field["options"] = $annotation->getOptions();
                     $field["type"] = $annotation->getType();
                     $field["propType"] = "prop";
-                } elseif ($annotation instanceof OneToOne) {
-                    $class = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                }
+            }
+            foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
+                if ($annotation instanceof OneToOne) {
                     $field["propType"] = "single";
-                    $field['class'] = $class;
-                    $field['entityName'] = $this->getEntityName($class);
+                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof OneToMany) {
-                    $class = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     $field["propType"] = "plural";
-                    $field['class'] = $class;
-                    $field['entityName'] = $this->getEntityName($class);
+                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof ManyToOne) {
-                    $class = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     $field["propType"] = "single";
-                    $field['class'] = $class;
-                    $field['entityName'] = $this->getEntityName($class);
+                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 }
+            }
 
-                if (!in_array($field, $properties) && $field != []) {
-                    array_push($properties, $field);
-                }
+            if (!in_array($field, $properties) && $field != []) {
+                array_push($properties, $field);
             }
         }
         return $properties;
