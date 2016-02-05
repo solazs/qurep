@@ -65,7 +65,11 @@ class ApiController extends Controller
         $response = new Response();
 
         if ($data instanceof Form) {
-            $data = $this->get('qurep_api.form_error_serializer')->serializeFormErrors($data);
+            $response->getStatusCode(400);
+            $data = array(
+                "errors" => $this->get('qurep_api.form_error_serializer')->serializeFormErrors($data),
+                "message" => "The form returned errors"
+            );
         }
 
         if ($data !== null) {
