@@ -60,9 +60,16 @@ class DataHandler
 
             return $entity;
         } else {
+            $this->handleFormError($form);
             return $form;
         }
 
+    }
+
+    function handleFormError($form)
+    {
+        $data = $this->get('qurep_api.form_error_serializer')->serializeFormErrors($form);
+        throw new BadRequestHttpException($data);
     }
 
     function bulkUpdate(string $entityClass, array $postData = array())
@@ -104,6 +111,7 @@ class DataHandler
 
             return $entity;
         } else {
+            $this->handleFormError($form);
             return $form;
         }
 
