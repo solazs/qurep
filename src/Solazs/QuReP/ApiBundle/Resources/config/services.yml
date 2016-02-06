@@ -1,19 +1,27 @@
 parameters:
+    qurep_api.caching.class: Doctrine\Common\Cache\ApcuCache
 
 services:
     qurep_api.route_analyzer:
         class: Solazs\QuReP\ApiBundle\Services\RouteAnalyzer
     qurep_api.data_handler:
         class: Solazs\QuReP\ApiBundle\Services\DataHandler
-        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder" ]
+        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder", "@qurep_api.form_errors_serializer" ]
     qurep_api.exception_listener:
         class: Solazs\QuReP\ApiBundle\EventListener\ExceptionListener
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
     qurep_api.entity_form_builder:
         class: Solazs\QuReP\ApiBundle\Services\EntityFormBuilder
-        arguments: [ "@form.factory" ]
+        arguments: [ "@form.factory", "@qurep_api.form_prop_cache", "@qurep_api.entity_parser" ]
         lazy: true
-    qurep_api.form_error_serializer:
+    qurep_api.entity_parser:
+        class: Solazs\QuReP\ApiBundle\Services\EntityParser
+        arguments: [ "@qurep_api.form_prop_cache" ]
+    qurep_api.form_errors_serializer:
         class: Solazs\QuReP\ApiBundle\Services\FormErrorsSerializer
         lazy: true
+    qurep_api.form_prop_cache:
+        class: %qurep_api.caching.class%
+        calls:
+            - [ setNamespace, [ "qurep_api.form_prop_" ] ]

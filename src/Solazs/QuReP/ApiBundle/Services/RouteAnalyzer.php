@@ -115,9 +115,10 @@ class RouteAnalyzer
             $filters[] = $subFilter;
         }
 
+        return $filters;
     }
 
-    protected function explodeAndCheckFilter($filter, $entitClass)
+    protected function explodeAndCheckFilter($filter, $entityClass)
     {
         $bits = explode(",", $filter);
         if (count($bits) > 3) {
@@ -134,18 +135,22 @@ class RouteAnalyzer
     /**
      * As PHP (with Symfony following its lead) does not handle multiple GET parameters
      * with the same name, a bit of tinkering is needed to be able to properly implement filters.
+     *
      * @param $key string name of the parameter to be extracted
      * @return array array of values for the key specified (empty if not found)
      */
     protected function fetchGetValuesFor($key)
     {
-        $queryData = explode('&', $_SERVER['QUERY_STRING']);
         $values = array();
 
-        foreach ($queryData as $param) {
-            list($name, $value) = explode('=', $param, 2);
-            if ($name == $key) {
-                $values[] = urldecode($value);
+        if (array_key_exists('QUERY_STRING', $_SERVER)) {
+            $queryData = explode('&', $_SERVER['QUERY_STRING']);
+
+            foreach ($queryData as $param) {
+                list($name, $value) = explode('=', $param, 2);
+                if ($name == $key) {
+                    $values[] = urldecode($value);
+                }
             }
         }
         return $values;

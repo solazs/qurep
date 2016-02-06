@@ -14,17 +14,24 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Solazs\QuReP\ApiBundle\Exception\FormErrorException;
 
 class DataHandler
 {
     /* @var $em \Doctrine\ORM\EntityManager */
     protected $em;
     protected $entityFormBuilder;
+    protected $formErrorsHandler;
 
-    function __construct(EntityManager $entityManager, EntityFormBuilder $entityFormBuilder)
+    function __construct(
+        EntityManager $entityManager,
+        EntityFormBuilder $entityFormBuilder,
+        FormErrorsSerializer $formErrorsHandler
+    )
     {
         $this->em = $entityManager;
         $this->entityFormBuilder = $entityFormBuilder;
+        $this->formErrorsHandler = $formErrorsHandler;
     }
 
     protected function buildFilterSubQuery(QueryBuilder $qb, array $filters, array &$parameters)
@@ -36,10 +43,14 @@ class DataHandler
                 $andConditions[] = $qb->expr()->$filter['operand']($filter["prop"], ":" . $filter['prop']);
                 $parameters[":" . $filter['prop']] = $filter['value'];
             }
-            $andConditions = call_user_func_array([$qb->expr(), "andx"], $andConditions);
-            $conditions[] = $andConditions;
+            if (count($andConditions) > 1) {
+                $andConditions = call_user_func_array([$qb->expr(), "andx"], $andConditions);
+                $conditions[] = $andConditions;
+            }
         }
-        $conditions = call_user_func_array(array($qb->expr(), "orx"), $conditions);
+        if (count($conditions) > 1) {
+            $conditions = call_user_func_array(array($qb->expr(), "orx"), $conditions);
+        }
 
         return $conditions;
     }
@@ -54,15 +65,18 @@ class DataHandler
         return $data;
     }
 
-    function getAll(string $entityClass, array $filters = array())
+    function getAll(string $entityClass, $filters = array())
     {
         $parameters = [];
         $qb = $this->em->createQueryBuilder();
         $conditions = $this->buildFilterSubQuery($qb, $filters, $parameters);
         $qb->select("ent")
-            ->from($entityClass, "ent")
-            ->where($conditions)
-            ->setParameters($parameters);
+            ->from($entityClass, "ent");
+        if (count($conditions) > 0) {
+            $qb->where($conditions)
+                ->setParameters($parameters);
+        }
+
         $data = $qb->getQuery()->getResult();
         return $data;
     }
@@ -93,12 +107,6 @@ class DataHandler
 
     }
 
-    function handleFormError($form)
-    {
-        $data = $this->get('qurep_api.form_error_serializer')->serializeFormErrors($form);
-        throw new BadRequestHttpException($data);
-    }
-
     function bulkUpdate(string $entityClass, array $postData = array())
     {
         if (!is_array($postData)) {
@@ -107,18 +115,20 @@ class DataHandler
         if (count($postData) == 0) {
             throw new BadRequestHttpException("Data is an empty array");
         }
+        $returnData = [];
         foreach ($postData as $item) {
             if (array_key_exists('id', $item)) {
                 $data = $item;
                 unset($data['id']);
-                return $this->update($entityClass, $item['id'], $data);
+                $entity = $this->update($entityClass, $item['id'], $data);
             } else {
-                return $this->create($entityClass, $item);
+                $entity = $this->create($entityClass, $item);
             }
+            $returnData[] = $entity;
         }
 
         // Should not reach this
-        return null;
+        return $returnData;
     }
 
     function create(string $entityClass, array $postData = array())
@@ -166,5 +176,11 @@ class DataHandler
             ->setParameter(':ids', $ids)
             ->getQuery()
             ->execute();
+    }
+
+    function handleFormError($form)
+    {
+        $data = $this->formErrorsHandler->serializeFormErrors($form, true);
+        throw new FormErrorException($data);
     }
 }

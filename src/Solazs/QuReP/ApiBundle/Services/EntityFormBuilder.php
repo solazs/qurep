@@ -8,36 +8,22 @@
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
-
-use Doctrine\Common\Annotations\AnnotationException;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Cache\ApcuCache;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\OneToOne;
-use Solazs\QuReP\ApiBundle\Annotations\Entity\Type;
+use Doctrine\Common\Cache\Cache;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class EntityFormBuilder
 {
-    protected $reader;
     protected $formFactory;
     protected $cache;
-    protected $entities;
+    protected $entityParser;
 
-    public function setConfig($entities)
+    public function __construct(FormFactory $formFactory, Cache $cache, EntityParser $entityParser)
     {
-        $this->entities = $entities;
-    }
-
-    public function __construct(FormFactory $formFactory)
-    {
-        $this->reader = new AnnotationReader();
         $this->formFactory = $formFactory;
-        $this->cache = new ApcuCache();
-        $this->cache->setNamespace('qurep_form_props_');
+        $this->cache = $cache;
+        $this->entityParser = $entityParser;
     }
 
     public function getForm($entityClass, $entity)
@@ -45,7 +31,7 @@ class EntityFormBuilder
         if ($this->cache->contains($entityClass)) {
             $properties = $this->cache->fetch($entityClass);
         } else {
-            $properties = $this->getProps($entityClass);
+            $properties = $this->entityParser->getProps($entityClass);
             $this->cache->save($entityClass, $properties, 3600);
         }
 
@@ -93,79 +79,6 @@ class EntityFormBuilder
 
         return $formBuilder->getForm();
 
-    }
-
-    protected function getProps($entityClass) : array
-    {
-        $properties = [];
-        $refClass = new \ReflectionClass($entityClass);
-
-        $entityProperties = $refClass->getProperties();
-        foreach ($entityProperties as $entityProperty) {
-            $field = [];
-            foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
-                if ($annotation instanceof Type) {
-                    $field["label"] =
-                        $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
-                    $field["options"] = $annotation->getOptions();
-                    $field["type"] = $annotation->getType();
-                    $field["propType"] = "prop";
-                }
-            }
-            foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
-                if ($annotation instanceof OneToOne) {
-                    if (!array_key_exists('label', $field)) {
-                        $field['label'] = $entityProperty->getName();
-                    }
-                    $field["propType"] = "single";
-                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
-                } elseif ($annotation instanceof OneToMany) {
-                    if (!array_key_exists('label', $field)) {
-                        $field['label'] = $entityProperty->getName();
-                    }
-                    $field["propType"] = "plural";
-                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
-                } elseif ($annotation instanceof ManyToOne) {
-                    if (!array_key_exists('label', $field)) {
-                        $field['label'] = $entityProperty->getName();
-                    }
-                    $field["propType"] = "single";
-                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
-                }
-            }
-
-            if (!in_array($field, $properties) && $field != []) {
-                array_push($properties, $field);
-            }
-        }
-        return $properties;
-    }
-
-    protected
-    function getEntityClass(
-        $entityClass,
-        $className
-    ) {
-        if (class_exists($className)) {
-            return $className;
-        } else {
-            $fullClassName = substr($entityClass, 0, strrpos($entityClass, '\\')) . '\\' . $className;
-            if (class_exists($fullClassName)) {
-                return substr($entityClass, 0, strrpos($entityClass, '\\')) . '\\' . $className;
-            } else {
-                throw new AnnotationException("Cannot find related entity '" . $className . "' in " . $entityClass);
-            }
-        }
-    }
-
-    protected function getEntityName($entityClass)
-    {
-        foreach ($this->entities as $entity) {
-            if ($entity['class'] == $entityClass) {
-                return $entity['entity_name'];
-            }
-        }
-        return null;
     }
 
 }
