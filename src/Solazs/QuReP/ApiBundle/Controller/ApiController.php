@@ -5,7 +5,6 @@ namespace Solazs\QuReP\ApiBundle\Controller;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -62,7 +61,11 @@ class ApiController extends Controller
                 $statusCode = 204;
                 break;
             case Action::DELETE_COLLECTION:
-                $dataHandler->deleteCollection($action['class'], $request->request->all());
+                $postData = json_decode($request->getContent(), true);
+                if ($postData === null) {
+                    throw new BadRequestHttpException('Invalid JSON or null content');
+                }
+                $dataHandler->deleteCollection($action['class'], $postData);
                 $data = null;
                 $statusCode = 204;
                 break;
