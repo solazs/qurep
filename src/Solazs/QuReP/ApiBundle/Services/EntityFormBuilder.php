@@ -8,7 +8,7 @@
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
-use Doctrine\Common\Cache\Cache;
+use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -16,24 +16,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class EntityFormBuilder
 {
     protected $formFactory;
-    protected $cache;
     protected $entityParser;
 
-    public function __construct(FormFactory $formFactory, Cache $cache, EntityParser $entityParser)
+    public function __construct(FormFactory $formFactory, EntityParser $entityParser)
     {
         $this->formFactory = $formFactory;
-        $this->cache = $cache;
         $this->entityParser = $entityParser;
     }
 
     public function getForm($entityClass, $entity)
     {
-        if ($this->cache->contains($entityClass)) {
-            $properties = $this->cache->fetch($entityClass);
-        } else {
-            $properties = $this->entityParser->getProps($entityClass);
-            $this->cache->save($entityClass, $properties, 3600);
-        }
+        $properties = $this->entityParser->getProps($entityClass);
 
         if (count($properties) <= 1) {
             throw new HttpException(500, "There are no properties annotated with Type in " . $entityClass);
@@ -46,31 +39,29 @@ class EntityFormBuilder
             ]);
         foreach ($properties as $property) {
             switch ($property['propType']) {
-                case 'prop':
+                case (Consts::formProp):
                     $formBuilder->add(
                         $property['label'],
                         $property['type'],
                         $property['options'] === null ? [] : $property['options']
                     );
                     break;
-                case 'single':
+                case (Consts::singleProp):
                     $formBuilder->add(
                         $property['label'],
                         EntityType::class,
                         [
-                            'class' => $property['class'],
-                            'choice_label' => 'id'
+                            'class' => $property['class']
                         ]
                     );
                     break;
-                case 'plural':
+                case (Consts::pluralProp):
                     $formBuilder->add(
                         $property['label'],
                         EntityType::class,
                         [
                             'multiple' => true,
-                            'class' => $property['class'],
-                            'choice_label' => 'id'
+                            'class' => $property['class']
                         ]
                     );
                     break;

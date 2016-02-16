@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
 use Solazs\QuReP\ApiBundle\Annotations\Entity\Type;
+use Solazs\QuReP\ApiBundle\Resources\Consts;
 
 class EntityParser
 {
@@ -34,7 +35,19 @@ class EntityParser
         $this->entities = $entities;
     }
 
-    public function getProps($entityClass) : array
+    public function getProps(string $entityClass) :array
+    {
+        if ($this->cache->contains($entityClass)) {
+            $properties = $this->cache->fetch($entityClass);
+        } else {
+            $properties = $this->parseProps($entityClass);
+            $this->cache->save($entityClass, $properties, 3600);
+        }
+
+        return $properties;
+    }
+
+    protected function parseProps($entityClass) : array
     {
         $properties = [];
         $refClass = new \ReflectionClass($entityClass);
@@ -48,7 +61,7 @@ class EntityParser
                         $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
                     $field["options"] = $annotation->getOptions();
                     $field["type"] = $annotation->getType();
-                    $field["propType"] = "prop";
+                    $field["propType"] = Consts::formProp;
                 }
             }
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
@@ -56,20 +69,23 @@ class EntityParser
                     if (!array_key_exists('label', $field)) {
                         $field['label'] = $entityProperty->getName();
                     }
-                    $field["propType"] = "single";
+                    $field["propType"] = Consts::singleProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof OneToMany) {
                     if (!array_key_exists('label', $field)) {
                         $field['label'] = $entityProperty->getName();
                     }
-                    $field["propType"] = "plural";
+                    $field["propType"] = Consts::pluralProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof ManyToOne) {
                     if (!array_key_exists('label', $field)) {
                         $field['label'] = $entityProperty->getName();
                     }
-                    $field["propType"] = "single";
+                    $field["propType"] = Consts::singleProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                } else {
+                    $field["propType"] = Consts::prop;
+                    $field['label'] = $entityProperty->getName();
                 }
             }
 

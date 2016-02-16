@@ -10,6 +10,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Internal\Hydration\ArrayHydrator;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -57,7 +58,13 @@ class DataHandler
 
     function get(string $entityClass, int $id = 0)
     {
-        $data = $this->em->getRepository($entityClass)->find($id);
+        $data = $this->em->createQueryBuilder()
+            ->select('ent')
+            ->from($entityClass, 'ent')
+            ->where('ent.id = :id')
+            ->setParameter(':id', $id)
+            ->getQuery()
+            ->getSingleResult();
 
         if (!$data) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
@@ -99,7 +106,7 @@ class DataHandler
             $this->em->persist($entity);
             $this->em->flush();
 
-            return $entity;
+            return $this->get($entityClass, $entity->getId());
         } else {
             $this->handleFormError($form);
             return $form;
@@ -127,7 +134,6 @@ class DataHandler
             $returnData[] = $entity;
         }
 
-        // Should not reach this
         return $returnData;
     }
 
@@ -146,7 +152,7 @@ class DataHandler
             $this->em->persist($entity);
             $this->em->flush();
 
-            return $entity;
+            return $this->get($entityClass, $entity->getId());
         } else {
             $this->handleFormError($form);
             return $form;
@@ -171,8 +177,8 @@ class DataHandler
             array_push($ids, $item['id']);
         }
         $this->em->createQueryBuilder()
-            ->delete($entityClass)
-            ->where('id IN :ids')
+            ->delete($entityClass, 'ent')
+            ->where('ent.id IN (:ids)')
             ->setParameter(':ids', $ids)
             ->getQuery()
             ->execute();

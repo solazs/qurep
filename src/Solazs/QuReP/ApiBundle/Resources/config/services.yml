@@ -1,6 +1,8 @@
 parameters:
     qurep_api.caching.class: Doctrine\Common\Cache\ApcuCache
 
+    jms_serializer.doctrine_proxy_subscriber.class: Solazs\QuReP\ApiBundle\EventListener\SerializationEventListener
+
 services:
     qurep_api.route_analyzer:
         class: Solazs\QuReP\ApiBundle\Services\RouteAnalyzer
@@ -13,7 +15,7 @@ services:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
     qurep_api.entity_form_builder:
         class: Solazs\QuReP\ApiBundle\Services\EntityFormBuilder
-        arguments: [ "@form.factory", "@qurep_api.form_prop_cache", "@qurep_api.entity_parser" ]
+        arguments: [ "@form.factory", "@qurep_api.entity_parser" ]
         lazy: true
     qurep_api.entity_parser:
         class: Solazs\QuReP\ApiBundle\Services\EntityParser
@@ -25,3 +27,11 @@ services:
         class: %qurep_api.caching.class%
         calls:
             - [ setNamespace, [ "qurep_api.form_prop_" ] ]
+    qurep_api.entity_expander:
+        class: Solazs\QuReP\ApiBundle\Services\EntityExpander
+        arguments: [ "@qurep_api.entity_parser" ]
+
+    doctrineproxy_handler:
+        class: Solazs\QuReP\ApiBundle\Serializer\DoctrineProxyHandler
+        tags:
+            - { name: jms_serializer.subscribing_handler }
