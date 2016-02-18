@@ -8,7 +8,7 @@ services:
         class: Solazs\QuReP\ApiBundle\Services\RouteAnalyzer
     qurep_api.data_handler:
         class: Solazs\QuReP\ApiBundle\Services\DataHandler
-        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder", "@qurep_api.form_errors_serializer" ]
+        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder", "@qurep_api.form_errors_serializer", "@qurep_api.entity_parser" ]
     qurep_api.exception_listener:
         class: Solazs\QuReP\ApiBundle\EventListener\ExceptionListener
         tags:

@@ -62,6 +62,7 @@ class EntityParser
                     $field["options"] = $annotation->getOptions();
                     $field["type"] = $annotation->getType();
                     $field["propType"] = Consts::formProp;
+                    $field['name'] = $entityProperty->getName();
                 }
             }
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
@@ -87,6 +88,7 @@ class EntityParser
                     if (count($field) == 0) {
                         $field["propType"] = Consts::prop;
                         $field['label'] = $entityProperty->getName();
+                        $field['name'] = $entityProperty->getName();
                     }
                 }
             }

@@ -12,6 +12,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Internal\Hydration\ArrayHydrator;
 use Doctrine\ORM\QueryBuilder;
+use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -23,16 +24,19 @@ class DataHandler
     protected $em;
     protected $entityFormBuilder;
     protected $formErrorsHandler;
+    protected $entityParser;
 
     function __construct(
         EntityManager $entityManager,
         EntityFormBuilder $entityFormBuilder,
-        FormErrorsSerializer $formErrorsHandler
+        FormErrorsSerializer $formErrorsHandler,
+        EntityParser $entityParser
     )
     {
         $this->em = $entityManager;
         $this->entityFormBuilder = $entityFormBuilder;
         $this->formErrorsHandler = $formErrorsHandler;
+        $this->entityParser = $entityParser;
     }
 
     protected function buildFilterSubQuery(QueryBuilder $qb, array $filters, array &$parameters)
@@ -59,7 +63,7 @@ class DataHandler
     function get(string $entityClass, int $id = 0)
     {
         $data = $this->em->createQueryBuilder()
-            ->select('ent')
+            ->select($this->buildPropString($entityClass))
             ->from($entityClass, 'ent')
             ->where('ent.id = :id')
             ->setParameter(':id', $id)
@@ -77,7 +81,7 @@ class DataHandler
         $parameters = [];
         $qb = $this->em->createQueryBuilder();
         $conditions = $this->buildFilterSubQuery($qb, $filters, $parameters);
-        $qb->select("ent")
+        $qb->select($this->buildPropString($entityClass))
             ->from($entityClass, "ent");
         if (count($conditions) > 0) {
             $qb->where($conditions)
@@ -188,5 +192,17 @@ class DataHandler
     {
         $data = $this->formErrorsHandler->serializeFormErrors($form, true);
         throw new FormErrorException($data);
+    }
+
+    protected function buildPropString(string $entityClass) : string
+    {
+        $propString = "ent.id";
+        $props = $this->entityParser->getProps($entityClass);
+        foreach ($props as $prop) {
+            if ($prop['propType'] == Consts::prop || $prop['propType'] == Consts::formProp) {
+                $propString = $propString . ", ent." . $prop['name'];
+            }
+        }
+        return $propString;
     }
 }
