@@ -84,8 +84,10 @@ class EntityParser
                     $field["propType"] = Consts::singleProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } else {
-                    $field["propType"] = Consts::prop;
-                    $field['label'] = $entityProperty->getName();
+                    if (count($field) == 0) {
+                        $field["propType"] = Consts::prop;
+                        $field['label'] = $entityProperty->getName();
+                    }
                 }
             }
 
