@@ -107,6 +107,28 @@ class RouteAnalyzer
         return array('class' => $class, 'action' => $action, 'id' => $id);
     }
 
+    public function extractExpand(Request $request, string $entityClass) : array
+    {
+        if ($request->query->has("expand")) {
+            $expandString = $request->query->get('expand');
+            $bits = explode(',', $expandString);
+            foreach ($bits as $bit) {
+                $found = false;
+                foreach ($this->entityParser->getProps($entityClass) as $prop) {
+                    if ($prop['name'] == $bit) {
+                        $found = true;
+                    }
+                }
+                if (!$found) {
+                    throw new BadRequestHttpException("Illegal expand literal: '" . $bit . "'");
+                }
+            }
+            return $bits;
+        } else {
+            return [];
+        }
+    }
+
     public function extractFilters($entityClass)
     {
         $queryValues = $this->fetchGetValuesFor("filter");
@@ -146,7 +168,11 @@ class RouteAnalyzer
             throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
         }
 
-        return array("prop" => $bits[0], "operand" => $bits[1], "value" => array_key_exists(2, $bits) ? $bits[2] : null);
+        return array(
+            "prop" => $bits[0],
+            "operand" => $bits[1],
+            "value" => array_key_exists(2, $bits) ? $bits[2] : null
+        );
     }
 
     /**

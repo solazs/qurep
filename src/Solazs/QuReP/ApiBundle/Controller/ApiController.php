@@ -22,14 +22,14 @@ class ApiController extends Controller
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');
         $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
         $dataHandler = $this->get('qurep_api.data_handler');
-        $filters = $routeAnalyzer->extractFilters($action['class']);
+        $dataHandler->setFilters($routeAnalyzer->extractFilters($action['class']));
         $statusCode = 200;
         switch ($action['action']) {
             case Action::GET_SINGLE:
                 $data = $dataHandler->get($action['class'], $action['id']);
                 break;
             case Action::GET_COLLECTION:
-                $data = $dataHandler->getAll($action['class'], $filters);
+                $data = $dataHandler->getAll($action['class']);
                 break;
             case Action::UPDATE_SINGLE:
                 $postData = json_decode($request->getContent(), true);

@@ -11,6 +11,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Internal\Hydration\ArrayHydrator;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Component\Form\Form;
@@ -25,6 +26,7 @@ class DataHandler
     protected $entityFormBuilder;
     protected $formErrorsHandler;
     protected $entityParser;
+    protected $filters;
 
     function __construct(
         EntityManager $entityManager,
@@ -37,12 +39,13 @@ class DataHandler
         $this->entityFormBuilder = $entityFormBuilder;
         $this->formErrorsHandler = $formErrorsHandler;
         $this->entityParser = $entityParser;
+        $this->filters = [];
     }
 
-    protected function buildFilterSubQuery(QueryBuilder $qb, array $filters, array &$parameters)
+    protected function buildFilterSubQuery(QueryBuilder $qb, array &$parameters)
     {
         $conditions = [];
-        foreach ($filters as $filterGrp) {
+        foreach ($this->filters as $filterGrp) {
             $andConditions = [];
             foreach ($filterGrp as $filter) {
                 $andConditions[] = $qb->expr()->$filter['operand']($filter["prop"], ":" . $filter['prop']);
@@ -53,7 +56,7 @@ class DataHandler
                 $conditions[] = $andConditions;
             }
         }
-        if (count($conditions) > 1) {
+        if (count($conditions) > 0) {
             $conditions = call_user_func_array(array($qb->expr(), "orx"), $conditions);
         }
 
@@ -62,12 +65,12 @@ class DataHandler
 
     function get(string $entityClass, int $id = 0)
     {
-        $data = $this->em->createQueryBuilder()
+        $qb = $this->em->createQueryBuilder()
             ->select($this->buildPropString($entityClass))
-            ->from($entityClass, 'ent')
-            ->where('ent.id = :id')
-            ->setParameter(':id', $id)
-            ->getQuery()
+            ->from($entityClass, 'ent');
+        $qb->where('ent.id = :id')
+            ->setParameter(':id', $id);
+        $data = $qb->getQuery()
             ->getSingleResult();
 
         if (!$data) {
@@ -76,11 +79,11 @@ class DataHandler
         return $data;
     }
 
-    function getAll(string $entityClass, $filters = array())
+    function getAll(string $entityClass)
     {
         $parameters = [];
         $qb = $this->em->createQueryBuilder();
-        $conditions = $this->buildFilterSubQuery($qb, $filters, $parameters);
+        $conditions = $this->buildFilterSubQuery($qb, $parameters);
         $qb->select($this->buildPropString($entityClass))
             ->from($entityClass, "ent");
         if (count($conditions) > 0) {
@@ -204,5 +207,13 @@ class DataHandler
             }
         }
         return $propString;
+    }
+
+    /**
+     * @param array $filters
+     */
+    public function setFilters($filters)
+    {
+        $this->filters = $filters;
     }
 }
