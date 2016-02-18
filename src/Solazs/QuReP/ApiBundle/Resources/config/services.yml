@@ -6,6 +6,7 @@ parameters:
 services:
     qurep_api.route_analyzer:
         class: Solazs\QuReP\ApiBundle\Services\RouteAnalyzer
+        arguments: [ "@qurep_api.entity_parser" ]
     qurep_api.data_handler:
         class: Solazs\QuReP\ApiBundle\Services\DataHandler
         arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder", "@qurep_api.form_errors_serializer", "@qurep_api.entity_parser" ]
