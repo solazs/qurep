@@ -18,6 +18,12 @@ use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 class RouteAnalyzer
 {
     protected $entities = null;
+    protected $entityParser;
+
+    function __construct(EntityParser $entityParser)
+    {
+        $this->entityParser = $entityParser;
+    }
 
     public function setConfig($entities)
     {
@@ -127,7 +133,18 @@ class RouteAnalyzer
             throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
         }
 
-        // TODO: Check prop and operand values to avoid SQL injection
+        $found = false;
+        foreach ($this->entityParser->getProps($entityClass) as $prop) {
+            if ($prop['name'] == $bits[0]) {
+                $found = true;
+            }
+        }
+
+        // todo: check operand
+
+        if (!$found) {
+            throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
+        }
 
         return array("prop" => $bits[0], "operand" => $bits[1], "value" => array_key_exists(2, $bits) ? $bits[2] : null);
     }

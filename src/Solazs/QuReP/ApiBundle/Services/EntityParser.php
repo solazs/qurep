@@ -70,18 +70,21 @@ class EntityParser
                     if (!array_key_exists('label', $field)) {
                         $field['label'] = $entityProperty->getName();
                     }
+                    $field['name'] = $entityProperty->getName();
                     $field["propType"] = Consts::singleProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof OneToMany) {
                     if (!array_key_exists('label', $field)) {
                         $field['label'] = $entityProperty->getName();
                     }
+                    $field['name'] = $entityProperty->getName();
                     $field["propType"] = Consts::pluralProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } elseif ($annotation instanceof ManyToOne) {
                     if (!array_key_exists('label', $field)) {
                         $field['label'] = $entityProperty->getName();
                     }
+                    $field['name'] = $entityProperty->getName();
                     $field["propType"] = Consts::singleProp;
                     $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                 } else {
