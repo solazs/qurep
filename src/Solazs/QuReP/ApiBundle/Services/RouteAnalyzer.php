@@ -11,6 +11,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 use Solazs\QuReP\ApiBundle\Exception\RouteException;
 use Solazs\QuReP\ApiBundle\Resources\Action;
+use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -109,21 +110,25 @@ class RouteAnalyzer
 
     public function extractExpand(Request $request, string $entityClass) : array
     {
+        $expands = [];
         if ($request->query->has("expand")) {
             $expandString = $request->query->get('expand');
             $bits = explode(',', $expandString);
             foreach ($bits as $bit) {
                 $found = false;
+                $class = null;
+                $type = null;
                 foreach ($this->entityParser->getProps($entityClass) as $prop) {
-                    if ($prop['name'] == $bit) {
+                    if ($prop['name'] == $bit && ($prop['propType'] == Consts::pluralProp || $prop['propType'] == Consts::singleProp)) {
                         $found = true;
+                        $expands[] = $prop;
                     }
                 }
                 if (!$found) {
                     throw new BadRequestHttpException("Illegal expand literal: '" . $bit . "'");
                 }
             }
-            return $bits;
+            return $expands;
         } else {
             return [];
         }

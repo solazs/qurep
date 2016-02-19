@@ -30,8 +30,7 @@ services:
             - [ setNamespace, [ "qurep_api.form_prop_" ] ]
     qurep_api.entity_expander:
         class: Solazs\QuReP\ApiBundle\Services\EntityExpander
-        arguments: [ "@qurep_api.entity_parser" ]
-
+        arguments: [ "@doctrine.orm.entity_manager" ]
     doctrineproxy_handler:
         class: Solazs\QuReP\ApiBundle\Serializer\DoctrineProxyHandler
         tags:

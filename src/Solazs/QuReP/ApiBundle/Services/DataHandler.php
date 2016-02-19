@@ -71,7 +71,7 @@ class DataHandler
         $qb->where('ent.id = :id')
             ->setParameter(':id', $id);
         $data = $qb->getQuery()
-            ->getSingleResult();
+            ->getOneOrNullResult();
 
         if (!$data) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');

@@ -76,6 +76,18 @@ class ApiController extends Controller
         $response = new Response();
 
         if ($data !== null) {
+            $data = $this->get("qurep_api.entity_expander")->expandEntity(
+                $routeAnalyzer->extractExpand($request, $action['class']),
+                $action['class'],
+                $data,
+                in_array($action['action'],
+                    [
+                        Action::DELETE_COLLECTION,
+                        Action::GET_COLLECTION,
+                        Action::UPDATE_COLLECTION
+                    ]),
+                $dataHandler
+            );
             $jsonData = $this->get('jms_serializer')->serialize($data, "json");
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
