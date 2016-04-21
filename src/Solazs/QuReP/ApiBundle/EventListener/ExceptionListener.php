@@ -55,7 +55,8 @@ class ExceptionListener
             // catch others
             $response = new Response(json_encode(array(
                 'error' => $exception->getMessage(),
-                'code' => $exception->getCode()
+                'code' => $exception->getCode(),
+                'exception' => get_class($exception)
             )));
         }
 
