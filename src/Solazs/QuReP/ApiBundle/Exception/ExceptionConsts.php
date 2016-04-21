@@ -11,7 +11,8 @@ namespace Solazs\QuReP\ApiBundle\Exception;
 
 class ExceptionConsts
 {
-    const NOTFOUNDERROR = 404;
     const BADREQUEST = 400;
+    const FORBIDDEN = 403;
+    const NOTFOUNDERROR = 404;
     const ROUTINGERROR = 1000;
 }

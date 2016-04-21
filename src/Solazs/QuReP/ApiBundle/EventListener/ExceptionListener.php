@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 
 class ExceptionListener
 {
@@ -44,6 +45,12 @@ class ExceptionListener
             $response = new Response(json_encode(array(
                 'error' => $exception->getMessage(),
                 'code' => ExceptionConsts::BADREQUEST,
+            )));
+        } elseif ($exception instanceof AuthenticationCredentialsNotFoundException) {
+            // 403
+            $response = new Response(json_encode(array(
+                'error' => "Login credentials not found",
+                'code' => ExceptionConsts::FORBIDDEN,
             )));
         } elseif ($exception instanceof NotFoundHttpException) {
             // 404
