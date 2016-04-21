@@ -1,5 +1,5 @@
 parameters:
-    qurep_api.caching.class: Doctrine\Common\Cache\ApcuCache
+    qurep_api.caching.class: Doctrine\Common\Cache\ApcCache
 
     jms_serializer.doctrine_proxy_subscriber.class: Solazs\QuReP\ApiBundle\EventListener\SerializationEventListener
 
