@@ -38,26 +38,26 @@ class ExceptionListener
             $response = new Response(json_encode(array(
                 'error' => $exception->getErrorArray(),
                 'code' => ExceptionConsts::BADREQUEST,
-            )));
+            )), ExceptionConsts::BADREQUEST);
             $response->setStatusCode(400);
         } elseif ($exception instanceof BadRequestHttpException) {
             // 400
             $response = new Response(json_encode(array(
                 'error' => $exception->getMessage(),
                 'code' => ExceptionConsts::BADREQUEST,
-            )));
+            )), ExceptionConsts::BADREQUEST);
         } elseif ($exception instanceof AuthenticationCredentialsNotFoundException) {
             // 403
             $response = new Response(json_encode(array(
                 'error' => "Login credentials not found",
-                'code' => ExceptionConsts::FORBIDDEN,
-            )));
+                'code' => ExceptionConsts::UNAUTHORIZED,
+            )), ExceptionConsts::UNAUTHORIZED);
         } elseif ($exception instanceof NotFoundHttpException) {
             // 404
             $response = new Response(json_encode(array(
                 'error' => $exception->getMessage(),
                 'code' => ExceptionConsts::NOTFOUNDERROR,
-            )));
+            )), ExceptionConsts::NOTFOUNDERROR);
         } else {
             // catch others
             $response = new Response(json_encode(array(
