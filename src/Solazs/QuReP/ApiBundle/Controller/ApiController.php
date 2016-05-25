@@ -74,6 +74,7 @@ class ApiController extends Controller
         }
 
         $response = new Response();
+        $meta = [];
 
         if ($data !== null) {
             $data = $this->get("qurep_api.entity_expander")->expandEntity(
@@ -88,7 +89,10 @@ class ApiController extends Controller
                     ]),
                 $dataHandler
             );
-            $jsonData = $this->get('jms_serializer')->serialize($data, "json");
+            $jsonData = $this->get('jms_serializer')->serialize(
+              ["data" => $data, "meta" => $meta],
+              "json"
+            );
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
             $response->setStatusCode($statusCode);
