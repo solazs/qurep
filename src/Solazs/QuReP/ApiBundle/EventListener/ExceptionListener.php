@@ -29,42 +29,66 @@ class ExceptionListener
             // Custom QuReP exceptions
             // inject custom error codes/error constraints to exception types here.
 
-            $response = new Response(json_encode(array(
-                'error' => $exception->getMessage(),
-                'code' => $exception->getCode() == null ? null : $exception->getCode()
-            )));
+            $response = new Response(
+              json_encode(
+                array(
+                  'error' => $exception->getMessage(),
+                  'code'  => $exception->getCode() == null ? null : $exception->getCode(),
+                )
+              )
+            );
         } elseif ($exception instanceof FormErrorException) {
             // 400
-            $response = new Response(json_encode(array(
-                'error' => $exception->getErrorArray(),
-                'code' => ExceptionConsts::BADREQUEST,
-            )), ExceptionConsts::BADREQUEST);
+            $response = new Response(
+              json_encode(
+                array(
+                  'error' => $exception->getErrorArray(),
+                  'code'  => ExceptionConsts::BADREQUEST,
+                )
+              ), ExceptionConsts::BADREQUEST
+            );
             $response->setStatusCode(400);
         } elseif ($exception instanceof BadRequestHttpException) {
             // 400
-            $response = new Response(json_encode(array(
-                'error' => $exception->getMessage(),
-                'code' => ExceptionConsts::BADREQUEST,
-            )), ExceptionConsts::BADREQUEST);
+            $response = new Response(
+              json_encode(
+                array(
+                  'error' => $exception->getMessage(),
+                  'code'  => ExceptionConsts::BADREQUEST,
+                )
+              ), ExceptionConsts::BADREQUEST
+            );
         } elseif ($exception instanceof AuthenticationCredentialsNotFoundException) {
             // 403
-            $response = new Response(json_encode(array(
-                'error' => "Login credentials not found",
-                'code' => ExceptionConsts::UNAUTHORIZED,
-            )), ExceptionConsts::UNAUTHORIZED);
+            $response = new Response(
+              json_encode(
+                array(
+                  'error' => "Login credentials not found",
+                  'code'  => ExceptionConsts::UNAUTHORIZED,
+                )
+              ), ExceptionConsts::UNAUTHORIZED
+            );
         } elseif ($exception instanceof NotFoundHttpException) {
             // 404
-            $response = new Response(json_encode(array(
-                'error' => $exception->getMessage(),
-                'code' => ExceptionConsts::NOTFOUNDERROR,
-            )), ExceptionConsts::NOTFOUNDERROR);
+            $response = new Response(
+              json_encode(
+                array(
+                  'error' => $exception->getMessage(),
+                  'code'  => ExceptionConsts::NOTFOUNDERROR,
+                )
+              ), ExceptionConsts::NOTFOUNDERROR
+            );
         } else {
             // catch others
-            $response = new Response(json_encode(array(
-                'error' => $exception->getMessage(),
-                'code' => $exception->getCode(),
-                'exception' => get_class($exception)
-            )));
+            $response = new Response(
+              json_encode(
+                array(
+                  'error'     => $exception->getMessage(),
+                  'code'      => $exception->getCode(),
+                  'exception' => get_class($exception),
+                )
+              )
+            );
         }
 
         $response->headers->set("content-type", "application/json");

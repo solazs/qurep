@@ -25,11 +25,11 @@ class QuRePApiExtension extends Extension
 
         foreach ($config['entities'] as $entity) {
             if (class_exists($entity['class'], false)) {
-                throw new InvalidArgumentException("Invalid configuration value! Class " . $entity['class'] . " does not exist");
+                throw new InvalidArgumentException("Invalid configuration value! Class ".$entity['class']." does not exist");
             }
         }
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
         $routeAnalyzerServiceDefinition = $container->getDefinition('qurep_api.route_analyzer');

@@ -19,23 +19,23 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('qurep_api')
-            ->children()
-            ->arrayNode('entities')
-            ->requiresAtLeastOneElement()
-            ->prototype("array")
-            ->children()
-            ->scalarNode('entity_name')
-            ->IsRequired()
-            ->cannotBeEmpty()
-            ->end()
-            ->scalarNode('class')
-            ->IsRequired()
-            ->cannotBeEmpty()
-            ->end()
-            ->end()
-            ->end()
-            ->end()
-            ->end();
+          ->children()
+          ->arrayNode('entities')
+          ->requiresAtLeastOneElement()
+          ->prototype("array")
+          ->children()
+          ->scalarNode('entity_name')
+          ->IsRequired()
+          ->cannotBeEmpty()
+          ->end()
+          ->scalarNode('class')
+          ->IsRequired()
+          ->cannotBeEmpty()
+          ->end()
+          ->end()
+          ->end()
+          ->end()
+          ->end();
 
         return $treeBuilder;
     }

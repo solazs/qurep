@@ -26,10 +26,10 @@ class DoctrineProxyHandler implements SubscribingHandlerInterface
 
         foreach (array('json', 'xml', 'yml') as $format) {
             $methods[] = [
-                'direction' => GraphNavigator::DIRECTION_SERIALIZATION,
-                'format' => $format,
-                'type' => 'Solazs\\QuReP\\ApiBundle\\Serializer\\SerializerProxyType',
-                'method' => 'serializeTo' . ucfirst($format),
+              'direction' => GraphNavigator::DIRECTION_SERIALIZATION,
+              'format'    => $format,
+              'type'      => 'Solazs\\QuReP\\ApiBundle\\Serializer\\SerializerProxyType',
+              'method'    => 'serializeTo'.ucfirst($format),
             ];
         }
 
@@ -55,7 +55,7 @@ class DoctrineProxyHandler implements SubscribingHandlerInterface
     public function serializeToXml(XmlSerializationVisitor $visitor, $entity, array $type, Context $context)
     {
         $visitor->getCurrentNode()->appendChild(
-            $formNode = $visitor->getDocument()->createElement('id', $type['params']['id'])
+          $formNode = $visitor->getDocument()->createElement('id', $type['params']['id'])
         );
 
         return $formNode;

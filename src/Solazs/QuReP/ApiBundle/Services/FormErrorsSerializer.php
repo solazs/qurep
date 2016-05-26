@@ -12,10 +12,10 @@ class FormErrorsSerializer
 {
 
     public function serializeFormErrors(
-        FormInterface $form,
-        $flat_array = false,
-        $add_form_name = false,
-        $glue_keys = '_'
+      FormInterface $form,
+      $flat_array = false,
+      $add_form_name = false,
+      $glue_keys = '_'
     ) {
         $errors = array();
         $errors['global'] = array();
@@ -28,8 +28,11 @@ class FormErrorsSerializer
         $errors['fields'] = $this->serialize($form);
 
         if ($flat_array) {
-            $errors['fields'] = $this->arrayFlatten($errors['fields'],
-                $glue_keys, (($add_form_name) ? $form->getName() : ''));
+            $errors['fields'] = $this->arrayFlatten(
+              $errors['fields'],
+              $glue_keys,
+              (($add_form_name) ? $form->getName() : '')
+            );
         }
 
 
@@ -60,15 +63,20 @@ class FormErrorsSerializer
 
             if (is_array($value)) {
 
-                $flattenedArray = array_merge($flattenedArray,
-                    $this->arrayFlatten($value, $separator,
-                        (strlen($flattened_key) > 0 ? $flattened_key . $separator : "") . $key)
+                $flattenedArray = array_merge(
+                  $flattenedArray,
+                  $this->arrayFlatten(
+                    $value,
+                    $separator,
+                    (strlen($flattened_key) > 0 ? $flattened_key.$separator : "").$key
+                  )
                 );
 
             } else {
-                $flattenedArray[(strlen($flattened_key) > 0 ? $flattened_key . $separator : "") . $key] = $value;
+                $flattenedArray[(strlen($flattened_key) > 0 ? $flattened_key.$separator : "").$key] = $value;
             }
         }
+
         return $flattenedArray;
     }
 

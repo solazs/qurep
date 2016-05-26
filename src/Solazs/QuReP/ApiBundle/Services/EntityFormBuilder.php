@@ -29,40 +29,43 @@ class EntityFormBuilder
         $properties = $this->entityParser->getProps($entityClass);
 
         if (count($properties) <= 1) {
-            throw new HttpException(500, "There are no properties annotated with Type in " . $entityClass);
+            throw new HttpException(500, "There are no properties annotated with Type in ".$entityClass);
         }
 
-        $formBuilder = $this->formFactory->createBuilder('Symfony\Component\Form\Extension\Core\Type\FormType', $entity,
-            [
-                'data_class' => $entityClass,
-                'csrf_protection' => false
-            ]);
+        $formBuilder = $this->formFactory->createBuilder(
+          'Symfony\Component\Form\Extension\Core\Type\FormType',
+          $entity,
+          [
+            'data_class'      => $entityClass,
+            'csrf_protection' => false,
+          ]
+        );
         foreach ($properties as $property) {
             switch ($property['propType']) {
                 case (Consts::formProp):
                     $formBuilder->add(
-                        $property['label'],
-                        $property['type'],
-                        $property['options'] === null ? [] : $property['options']
+                      $property['label'],
+                      $property['type'],
+                      $property['options'] === null ? [] : $property['options']
                     );
                     break;
                 case (Consts::singleProp):
                     $formBuilder->add(
-                        $property['label'],
-                        EntityType::class,
-                        [
-                            'class' => $property['class']
-                        ]
+                      $property['label'],
+                      EntityType::class,
+                      [
+                        'class' => $property['class'],
+                      ]
                     );
                     break;
                 case (Consts::pluralProp):
                     $formBuilder->add(
-                        $property['label'],
-                        EntityType::class,
-                        [
-                            'multiple' => true,
-                            'class' => $property['class']
-                        ]
+                      $property['label'],
+                      EntityType::class,
+                      [
+                        'multiple' => true,
+                        'class'    => $property['class'],
+                      ]
                     );
                     break;
             }

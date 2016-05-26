@@ -58,7 +58,7 @@ class EntityParser
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof Type) {
                     $field["label"] =
-                        $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
+                      $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
                     $field["options"] = $annotation->getOptions();
                     $field["type"] = $annotation->getType();
                     $field["propType"] = Consts::formProp;
@@ -100,22 +100,23 @@ class EntityParser
                 array_push($properties, $field);
             }
         }
+
         return $properties;
     }
 
     protected
     function getEntityClass(
-        $entityClass,
-        $className
+      $entityClass,
+      $className
     ) {
         if (class_exists($className)) {
             return $className;
         } else {
-            $fullClassName = substr($entityClass, 0, strrpos($entityClass, '\\')) . '\\' . $className;
+            $fullClassName = substr($entityClass, 0, strrpos($entityClass, '\\')).'\\'.$className;
             if (class_exists($fullClassName)) {
-                return substr($entityClass, 0, strrpos($entityClass, '\\')) . '\\' . $className;
+                return substr($entityClass, 0, strrpos($entityClass, '\\')).'\\'.$className;
             } else {
-                throw new AnnotationException("Cannot find related entity '" . $className . "' in " . $entityClass);
+                throw new AnnotationException("Cannot find related entity '".$className."' in ".$entityClass);
             }
         }
     }
@@ -127,6 +128,7 @@ class EntityParser
                 return $entity['entity_name'];
             }
         }
+
         return null;
     }
 

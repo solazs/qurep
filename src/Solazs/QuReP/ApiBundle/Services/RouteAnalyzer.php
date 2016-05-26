@@ -31,16 +31,6 @@ class RouteAnalyzer
         $this->entities = $entities;
     }
 
-    private function getEntityClassFromString($string)
-    {
-        foreach ($this->entities as $entity) {
-            if ($string === $entity['entity_name']) {
-                return $entity['class'];
-            }
-        }
-        throw new RouteException('Could not find entity ' . $string);
-    }
-
     public function getActionAndEntity(Request $request, $apiRoute)
     {
         $class = null;
@@ -52,7 +42,7 @@ class RouteAnalyzer
             $class = $this->getEntityClassFromString($apiRoute);
         } else {
             if (strpos($apiRoute, '/') != strrpos($apiRoute, '/')) {
-                throw new RouteException('Route ' . $apiRoute . ' is invalid, too many / signs.');
+                throw new RouteException('Route '.$apiRoute.' is invalid, too many / signs.');
             } else {
                 $class = $this->getEntityClassFromString(substr($apiRoute, 0, strpos($apiRoute, '/')));
                 $id = substr($apiRoute, strpos($apiRoute, '/') + 1, strlen($apiRoute) - strpos($apiRoute, '/'));
@@ -96,7 +86,7 @@ class RouteAnalyzer
                         }
                     }
                 } else {
-                    throw new MethodNotAllowedException(array("GET", "POST", "DELETE"), $method . ' not supported.');
+                    throw new MethodNotAllowedException(array("GET", "POST", "DELETE"), $method.' not supported.');
                 }
             }
         }
@@ -108,6 +98,16 @@ class RouteAnalyzer
         return array('class' => $class, 'action' => $action, 'id' => $id);
     }
 
+    private function getEntityClassFromString($string)
+    {
+        foreach ($this->entities as $entity) {
+            if ($string === $entity['entity_name']) {
+                return $entity['class'];
+            }
+        }
+        throw new RouteException('Could not find entity '.$string);
+    }
+
     public function extractExpand(Request $request, string $entityClass) : array
     {
         $expands = [];
@@ -115,22 +115,27 @@ class RouteAnalyzer
             $expandString = $request->query->get('expand');
             $bits = explode(',', $expandString);
             foreach ($bits as $bit) {
-                $found = false;
-                $class = null;
-                $type = null;
-                foreach ($this->entityParser->getProps($entityClass) as $prop) {
-                    if ($prop['name'] == $bit && ($prop['propType'] == Consts::pluralProp || $prop['propType'] == Consts::singleProp)) {
-                        $found = true;
-                        $expands[] = $prop;
-                    }
-                }
-                if (!$found) {
-                    throw new BadRequestHttpException("Illegal expand literal: '" . $bit . "'");
-                }
+                $expands[] = $this->verifyExpandBit($bit, $entityClass);
             }
+
             return $expands;
         } else {
             return [];
+        }
+    }
+
+    protected function verifyExpandBit(string $bit, string $entityClass)
+    {
+        $found = false;
+        foreach ($this->entityParser->getProps($entityClass) as $prop) {
+            if ($prop['name'] == $bit && ($prop['propType'] == Consts::pluralProp || $prop['propType'] == Consts::singleProp)) {
+                $found = $prop;
+            }
+        }
+        if (!$found) {
+            throw new BadRequestHttpException("Illegal expand literal: '".$bit."'");
+        } else {
+            return $found;
         }
     }
 
@@ -149,35 +154,6 @@ class RouteAnalyzer
         }
 
         return $filters;
-    }
-
-    protected function explodeAndCheckFilter($filter, $entityClass)
-    {
-        $bits = explode(",", $filter);
-        if (count($bits) > 3) {
-            throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
-        } elseif ((count($bits) < 3) && !($bits[1] == "isnull" || $bits[1] == "isnotnull")) {
-            throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
-        }
-
-        $found = false;
-        foreach ($this->entityParser->getProps($entityClass) as $prop) {
-            if ($prop['name'] == $bits[0]) {
-                $found = true;
-            }
-        }
-
-        // todo: check operand
-
-        if (!$found) {
-            throw new BadRequestHttpException("Illegal filter expression: '" . $filter . "'");
-        }
-
-        return array(
-            "prop" => $bits[0],
-            "operand" => $bits[1],
-            "value" => array_key_exists(2, $bits) ? $bits[2] : null
-        );
     }
 
     /**
@@ -201,6 +177,36 @@ class RouteAnalyzer
                 }
             }
         }
+
         return $values;
+    }
+
+    protected function explodeAndCheckFilter($filter, $entityClass)
+    {
+        $bits = explode(",", $filter);
+        if (count($bits) > 3) {
+            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
+        } elseif ((count($bits) < 3) && !($bits[1] == "isnull" || $bits[1] == "isnotnull")) {
+            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
+        }
+
+        $found = false;
+        foreach ($this->entityParser->getProps($entityClass) as $prop) {
+            if ($prop['name'] == $bits[0]) {
+                $found = true;
+            }
+        }
+
+        // todo: check operand
+
+        if (!$found) {
+            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
+        }
+
+        return array(
+          "prop"    => $bits[0],
+          "operand" => $bits[1],
+          "value"   => array_key_exists(2, $bits) ? $bits[2] : null,
+        );
     }
 }

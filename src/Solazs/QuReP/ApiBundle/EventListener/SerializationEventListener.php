@@ -16,6 +16,13 @@ use JMS\Serializer\EventDispatcher\PreSerializeEvent;
 
 class SerializationEventListener implements EventSubscriberInterface
 {
+    public static function getSubscribedEvents()
+    {
+        return array(
+          array('event' => 'serializer.pre_serialize', 'method' => 'onPreSerialize'),
+        );
+    }
+
     public function onPreSerialize(PreSerializeEvent $event)
     {
         $object = $event->getObject();
@@ -27,8 +34,8 @@ class SerializationEventListener implements EventSubscriberInterface
         $virtualType = !class_exists($type['name'], false);
 
         if ($object instanceof PersistentCollection
-            || $object instanceof MongoDBPersistentCollection
-            || $object instanceof PHPCRPersistentCollection
+          || $object instanceof MongoDBPersistentCollection
+          || $object instanceof PHPCRPersistentCollection
         ) {
 
             if (!$virtualType) {
@@ -50,12 +57,5 @@ class SerializationEventListener implements EventSubscriberInterface
             //$event->setType('Solazs\QuReP\ApiBundle\Serializer\SerializerProxyType',
             //    ["id" => $object->getId()]);
         }
-    }
-
-    public static function getSubscribedEvents()
-    {
-        return array(
-            array('event' => 'serializer.pre_serialize', 'method' => 'onPreSerialize'),
-        );
     }
 }

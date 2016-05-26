@@ -39,15 +39,19 @@ class EntityExpander
     protected function fillEntity($expands, $entityClass, $entity, DataHandler $dataHandler)
     {
         foreach ($expands as $expand) {
-            $getter = "get" . strtoupper(substr($expand['name'], 0, 1)) . substr($expand['name'], 1);
+            $getter = "get".strtoupper(substr($expand['name'], 0, 1)).substr($expand['name'], 1);
             $subData = $this->em->getRepository($entityClass)->find($entity['id'])->$getter();
             if ($expand['propType'] == Consts::pluralProp) {
                 $entity[$expand['name']] = [];
-                foreach ($subData as $item) {
-                    $entity[$expand['name']][] = $dataHandler->get($expand['class'], $item->getId());
+                if (count($subData)>0) {
+                    foreach ($subData as $item) {
+                        $entity[$expand['name']][] = $dataHandler->get($expand['class'], $item->getId());
+                    }
                 }
             } else {
-                $entity[$expand['name']] = $dataHandler->get($expand['class'], $subData->getId());
+                if ($subData !== null) {
+                    $entity[$expand['name']] = $dataHandler->get($expand['class'], $subData->getId());
+                }
             }
         }
 
