@@ -197,7 +197,9 @@ class RouteAnalyzer
             }
         }
 
-        // todo: check operand
+        if (!in_array($bits[1], Consts::validOperands)){
+            throw new BadRequestHttpException("Illegal filter operand in expression: '".$filter."'");
+        }
 
         if (!$found) {
             throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
