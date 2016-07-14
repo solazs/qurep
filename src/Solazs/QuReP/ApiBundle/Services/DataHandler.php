@@ -11,6 +11,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Internal\Hydration\ArrayHydrator;
+use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
@@ -29,10 +30,10 @@ class DataHandler
     protected $filters;
 
     function __construct(
-      EntityManager $entityManager,
-      EntityFormBuilder $entityFormBuilder,
-      FormErrorsSerializer $formErrorsHandler,
-      EntityParser $entityParser
+        EntityManager $entityManager,
+        EntityFormBuilder $entityFormBuilder,
+        FormErrorsSerializer $formErrorsHandler,
+        EntityParser $entityParser
     ) {
         $this->em = $entityManager;
         $this->entityFormBuilder = $entityFormBuilder;
@@ -47,15 +48,33 @@ class DataHandler
         $qb = $this->em->createQueryBuilder();
         $conditions = $this->buildFilterSubQuery($qb, $parameters);
         $qb->select($this->buildPropString($entityClass))
-          ->from($entityClass, "ent");
+            ->from($entityClass, 'ent');
+        $this->buildJoinSubQuery($qb);
         if (count($conditions) > 0) {
             $qb->where($conditions)
-              ->setParameters($parameters);
+                ->setParameters($parameters);
         }
 
         $data = $qb->getQuery()->getResult();
 
         return $data;
+    }
+
+    protected function buildJoinSubQuery(QueryBuilder &$qb)
+    {
+        foreach ($this->filters as $filterGrp) {
+            foreach ($filterGrp as $filter) {
+                $this->walkJoinFilterProp($filter['prop'], $qb);
+            }
+        }
+    }
+
+    private function walkJoinFilterProp(array $prop, QueryBuilder &$qb, $joinCntr = 0)
+    {
+        if ($prop['children'] != null) {
+            $qb->innerJoin('ent' . ($joinCntr == 0 ? '' : $joinCntr) . '.' . $prop['name'], 'ent' . ++$joinCntr);
+            $this->walkJoinFilterProp($prop['children'], $qb, $joinCntr);
+        }
     }
 
     protected function buildFilterSubQuery(QueryBuilder $qb, array &$parameters)
@@ -64,28 +83,47 @@ class DataHandler
         foreach ($this->filters as $filterGrp) {
             $andConditions = [];
             foreach ($filterGrp as $filter) {
-                $andConditions[] = $qb->expr()->$filter['operand']($filter["prop"], ":".$filter['prop']);
-                $parameters[":".$filter['prop']] = $filter['value'];
+                $propName = $this->walkFilterProp($filter["prop"]);
+                $andConditions[] = call_user_func_array([$qb->expr(), $filter['operand']],
+                    [$propName, ':' . str_replace('.', '_', $propName) . '_param']);
+                $parameters[':' . str_replace('.', '_', $propName) . '_param'] = $filter['value'];
             }
-            if (count($andConditions) > 1) {
-                $andConditions = call_user_func_array([$qb->expr(), "andx"], $andConditions);
-                $conditions[] = $andConditions;
+            if (count($andConditions) > 0) {
+                if (count($andConditions) > 1) {
+                    $andConditions = call_user_func_array([$qb->expr(), 'andx'], $andConditions);
+                    $conditions[] = $andConditions;
+                } else {
+                    $conditions[] = $andConditions[0];
+                }
             }
         }
         if (count($conditions) > 0) {
-            $conditions = call_user_func_array(array($qb->expr(), "orx"), $conditions);
+            if (count($conditions) > 1) {
+                $conditions = call_user_func_array([$qb->expr(), 'orx'], $conditions);
+            } else {
+                $conditions = $conditions[0];
+            }
         }
 
         return $conditions;
     }
 
+    private function walkFilterProp(array $prop, $joinCntr = 0)
+    {
+        if ($prop['children'] != null) {
+            return $this->walkFilterProp($prop['children'], ++$joinCntr);
+        } else {
+            return 'ent' . ($joinCntr == 0 ? '' : $joinCntr) . '.' . $prop['name'];
+        }
+    }
+
     protected function buildPropString(string $entityClass) : string
     {
-        $propString = "ent.id";
+        $propString = 'ent.id';
         $props = $this->entityParser->getProps($entityClass);
         foreach ($props as $prop) {
             if ($prop['propType'] == Consts::prop || $prop['propType'] == Consts::formProp) {
-                $propString = $propString.", ent.".$prop['name'];
+                $propString = $propString . ', ent.' . $prop['name'];
             }
         }
 
@@ -95,10 +133,10 @@ class DataHandler
     function bulkUpdate(string $entityClass, array $postData = array())
     {
         if (!is_array($postData)) {
-            throw new BadRequestHttpException("Data is not an array");
+            throw new BadRequestHttpException('Data is not an array');
         }
         if (count($postData) == 0) {
-            throw new BadRequestHttpException("Data is an empty array");
+            throw new BadRequestHttpException('Data is an empty array');
         }
         $returnData = [];
         foreach ($postData as $item) {
@@ -118,11 +156,11 @@ class DataHandler
     function update(string $entityClass, $id = 0, array $postData = array())
     {
         if (count($postData) == 0) {
-            throw new BadRequestHttpException("No data supplied");
+            throw new BadRequestHttpException('No data supplied');
         }
         $entity = $this->em->getRepository($entityClass)->find($id);
         if (!$entity) {
-            throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
+            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
 
         /** @var Form $form */
@@ -145,15 +183,15 @@ class DataHandler
     function get(string $entityClass, int $id = 0)
     {
         $qb = $this->em->createQueryBuilder()
-          ->select($this->buildPropString($entityClass))
-          ->from($entityClass, 'ent');
+            ->select($this->buildPropString($entityClass))
+            ->from($entityClass, 'ent');
         $qb->where('ent.id = :id')
-          ->setParameter(':id', $id);
+            ->setParameter(':id', $id);
         $data = $qb->getQuery()
-          ->getOneOrNullResult();
+            ->getOneOrNullResult();
 
         if (!$data) {
-            throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
+            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
 
         return $data;
@@ -168,7 +206,7 @@ class DataHandler
     function create(string $entityClass, array $postData = array())
     {
         if (count($postData) == 0) {
-            throw new BadRequestHttpException("No data supplied");
+            throw new BadRequestHttpException('No data supplied');
         }
         $entity = new $entityClass;
 
@@ -193,7 +231,7 @@ class DataHandler
     {
         $entity = $this->em->getRepository($entityClass)->find($id);
         if (!$entity) {
-            throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
+            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
         $this->em->remove($entity);
         $this->em->flush();
@@ -206,11 +244,11 @@ class DataHandler
             array_push($ids, $item['id']);
         }
         $this->em->createQueryBuilder()
-          ->delete($entityClass, 'ent')
-          ->where('ent.id IN (:ids)')
-          ->setParameter(':ids', $ids)
-          ->getQuery()
-          ->execute();
+            ->delete($entityClass, 'ent')
+            ->where('ent.id IN (:ids)')
+            ->setParameter(':ids', $ids)
+            ->getQuery()
+            ->execute();
     }
 
     /**

@@ -119,7 +119,7 @@ class RouteAnalyzer
                     $names = explode('.', $bit);
                     $expands[] = $this->walkArray($names, $entityClass);
                 } else {
-                    $tmp = $this->verifyExpandBit($bit, $entityClass);
+                    $tmp = $this->verifyPropName($bit, $entityClass);
                     $tmp['children'] = null;
                     $expands[] = $tmp;
                 }
@@ -131,29 +131,31 @@ class RouteAnalyzer
         }
     }
 
-    private function walkArray($items, $entityClass){
-        $ret = [];
-        $ret = $this->verifyExpandBit($items[0], $entityClass);
-        if (count($items) == 1) {
+    private function walkArray(array $propNames, string $entityClass, bool $forFilter = false)
+    {
+        $ret = $this->verifyPropName($propNames[0], $entityClass, $forFilter);
+        if (count($propNames) == 1) {
             $ret['children'] = null;
         } else {
-            array_shift($items);
-            $ret['children'] = $this->walkArray($items, $entityClass);
+            array_shift($propNames);
+            $ret['children'] = $this->walkArray($propNames, $entityClass, $forFilter);
         }
 
         return $ret;
     }
 
-    protected function verifyExpandBit(string $bit, string $entityClass)
+    protected function verifyPropName(string $bit, string $entityClass, bool $forFilter = false)
     {
         $found = false;
         foreach ($this->entityParser->getProps($entityClass) as $prop) {
-            if ($prop['name'] == $bit && ($prop['propType'] == Consts::pluralProp || $prop['propType'] == Consts::singleProp)) {
-                $found = $prop;
+            if ($prop['name'] == $bit) {
+                if (($prop['propType'] == Consts::pluralProp || $prop['propType'] == Consts::singleProp) || $forFilter) {
+                    $found = $prop;
+                }
             }
         }
         if (!$found) {
-            throw new BadRequestHttpException("Illegal expand literal: '".$bit."'");
+            throw new BadRequestHttpException('Illegal ' . ($forFilter ? 'filter' : 'expand') . " literal: '" . $bit . "'");
         } else {
             return $found;
         }
@@ -174,6 +176,37 @@ class RouteAnalyzer
         }
 
         return $filters;
+    }
+
+    protected function explodeAndCheckFilter($filter, $entityClass)
+    {
+        $bits = explode(',', $filter);
+        $bits[1] = strtolower($bits[1]);
+        if (count($bits) > 3) {
+            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
+        } elseif ((count($bits) < 3) && !($bits[1] == 'isnull' || $bits[1] == 'isnotnull')) {
+            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
+        }
+
+        if (!in_array($bits[1], Consts::validOperands)){
+            throw new BadRequestHttpException("Illegal filter operand in expression: '".$filter."'");
+        }
+
+        $filterExp = [];
+
+        if (strpos($bits[0], '.') !== false) {
+            $names = explode('.', $bits[0]);
+            $filterExp['prop'] = $this->walkArray($names, $entityClass, true);
+        } else {
+            $tmp = $this->verifyPropName($bits[0], $entityClass, true);
+            $tmp['children'] = null;
+            $filterExp['prop'] = $tmp;
+        }
+
+        $filterExp['operand'] = $bits[1];
+        $filterExp['value'] = array_key_exists(2, $bits) ? $bits[2] : null;
+
+        return $filterExp;
     }
 
     /**
@@ -199,37 +232,5 @@ class RouteAnalyzer
         }
 
         return $values;
-    }
-
-    protected function explodeAndCheckFilter($filter, $entityClass)
-    {
-        $bits = explode(',', $filter);
-        $bits[1] = strtolower($bits[1]);
-        if (count($bits) > 3) {
-            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
-        } elseif ((count($bits) < 3) && !($bits[1] == 'isnull' || $bits[1] == 'isnotnull')) {
-            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
-        }
-
-        if (!in_array($bits[1], Consts::validOperands)){
-            throw new BadRequestHttpException("Illegal filter operand in expression: '".$filter."'");
-        }
-
-        $found = false;
-        foreach ($this->entityParser->getProps($entityClass) as $prop) {
-            if ($prop['name'] == $bits[0]) {
-                $found = true;
-            }
-        }
-
-        if (!$found) {
-            throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
-        }
-
-        return array(
-          'prop'    => $bits[0],
-          'operand' => $bits[1],
-          'value'   => array_key_exists(2, $bits) ? $bits[2] : null,
-        );
     }
 }
