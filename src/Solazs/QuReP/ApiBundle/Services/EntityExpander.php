@@ -10,7 +10,6 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Proxy\Proxy;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 
 class EntityExpander
@@ -39,19 +38,39 @@ class EntityExpander
     protected function fillEntity($expands, $entityClass, $entity, DataHandler $dataHandler)
     {
         foreach ($expands as $expand) {
-            $getter = "get".strtoupper(substr($expand['name'], 0, 1)).substr($expand['name'], 1);
-            $subData = $this->em->getRepository($entityClass)->find($entity['id'])->$getter();
-            if ($expand['propType'] == Consts::pluralProp) {
-                $entity[$expand['name']] = [];
-                if (count($subData)>0) {
-                    foreach ($subData as $item) {
-                        $entity[$expand['name']][] = $dataHandler->get($expand['class'], $item->getId());
-                    }
+            $entity = $this->walkArray($expand, $entityClass, $entity, $dataHandler);
+        }
+
+        return $entity;
+    }
+
+    private function walkArray(array $expand, string $entityClass, $entity, DataHandler $dataHandler)
+    {
+        $entity = $this->doFill($expand, $entityClass, $entity, $dataHandler);
+        if ($expand['children'] != null) {
+            $entity[$expand['name']] = $this->walkArray($expand['children'], $entityClass, $entity[$expand['name']], $dataHandler);
+        }
+
+        return $entity;
+    }
+
+    private function doFill(array $expand, string $entityClass, $entity, DataHandler $dataHandler)
+    {
+        if (array_key_exists($expand['name'],$entity)){
+            return $entity;
+        }
+        $getter = "get".strtoupper(substr($expand['name'], 0, 1)).substr($expand['name'], 1);
+        $subData = $this->em->getRepository($entityClass)->find($entity['id'])->$getter();
+        if ($expand['propType'] == Consts::pluralProp) {
+            $entity[$expand['name']] = [];
+            if (count($subData) > 0) {
+                foreach ($subData as $item) {
+                    $entity[$expand['name']][] = $dataHandler->get($expand['class'], $item->getId());
                 }
-            } else {
-                if ($subData !== null) {
-                    $entity[$expand['name']] = $dataHandler->get($expand['class'], $subData->getId());
-                }
+            }
+        } else {
+            if ($subData !== null) {
+                $entity[$expand['name']] = $dataHandler->get($expand['class'], $subData->getId());
             }
         }
 

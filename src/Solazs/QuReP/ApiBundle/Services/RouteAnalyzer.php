@@ -115,13 +115,33 @@ class RouteAnalyzer
             $expandString = $request->query->get('expand');
             $bits = explode(',', $expandString);
             foreach ($bits as $bit) {
-                $expands[] = $this->verifyExpandBit($bit, $entityClass);
+                if (strpos($bit,'.') !== false){
+                    $names = explode('.', $bit);
+                    $expands[] = $this->walkArray($names, $entityClass);
+                } else {
+                    $tmp = $this->verifyExpandBit($bit, $entityClass);
+                    $tmp['children'] = null;
+                    $expands[] = $tmp;
+                }
             }
 
             return $expands;
         } else {
             return [];
         }
+    }
+
+    private function walkArray($items, $entityClass){
+        $ret = [];
+        $ret = $this->verifyExpandBit($items[0], $entityClass);
+        if (count($items) == 1) {
+            $ret['children'] = null;
+        } else {
+            array_shift($items);
+            $ret['children'] = $this->walkArray($items, $entityClass);
+        }
+
+        return $ret;
     }
 
     protected function verifyExpandBit(string $bit, string $entityClass)
@@ -191,15 +211,15 @@ class RouteAnalyzer
             throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
         }
 
+        if (!in_array($bits[1], Consts::validOperands)){
+            throw new BadRequestHttpException("Illegal filter operand in expression: '".$filter."'");
+        }
+
         $found = false;
         foreach ($this->entityParser->getProps($entityClass) as $prop) {
             if ($prop['name'] == $bits[0]) {
                 $found = true;
             }
-        }
-
-        if (!in_array($bits[1], Consts::validOperands)){
-            throw new BadRequestHttpException("Illegal filter operand in expression: '".$filter."'");
         }
 
         if (!$found) {
