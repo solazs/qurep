@@ -183,10 +183,11 @@ class RouteAnalyzer
 
     protected function explodeAndCheckFilter($filter, $entityClass)
     {
-        $bits = explode(",", $filter);
+        $bits = explode(',', $filter);
+        $bits[1] = strtolower($bits[1]);
         if (count($bits) > 3) {
             throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
-        } elseif ((count($bits) < 3) && !($bits[1] == "isnull" || $bits[1] == "isnotnull")) {
+        } elseif ((count($bits) < 3) && !($bits[1] == 'isnull' || $bits[1] == 'isnotnull')) {
             throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
         }
 
@@ -206,9 +207,9 @@ class RouteAnalyzer
         }
 
         return array(
-          "prop"    => $bits[0],
-          "operand" => $bits[1],
-          "value"   => array_key_exists(2, $bits) ? $bits[2] : null,
+          'prop'    => $bits[0],
+          'operand' => $bits[1],
+          'value'   => array_key_exists(2, $bits) ? $bits[2] : null,
         );
     }
 }
