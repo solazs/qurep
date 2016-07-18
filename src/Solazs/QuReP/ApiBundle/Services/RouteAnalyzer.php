@@ -161,9 +161,9 @@ class RouteAnalyzer
         }
     }
 
-    public function extractFilters($entityClass)
+    public function extractFilters(string $entityClass, Request $request)
     {
-        $queryValues = $this->fetchGetValuesFor("filter");
+        $queryValues = $this->fetchGetValuesFor("filter", $request);
         $filters = array();
 
         foreach ($queryValues as $queryValue) {
@@ -216,12 +216,12 @@ class RouteAnalyzer
      * @param $key string name of the parameter to be extracted
      * @return array array of values for the key specified (empty if not found)
      */
-    protected function fetchGetValuesFor($key)
+    protected function fetchGetValuesFor(string $key, Request $request)
     {
         $values = array();
 
-        if (array_key_exists('QUERY_STRING', $_SERVER)) {
-            $queryData = explode('&', $_SERVER['QUERY_STRING']);
+        if ($request->server->has('QUERY_STRING') && strlen($request->server->get('QUERY_STRING')) > 0) {
+            $queryData = explode('&', $request->server->get('QUERY_STRING'));
 
             foreach ($queryData as $param) {
                 list($name, $value) = explode('=', $param, 2);

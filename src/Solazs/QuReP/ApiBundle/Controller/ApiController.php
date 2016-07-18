@@ -22,7 +22,7 @@ class ApiController extends Controller
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');
         $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
         $dataHandler = $this->get('qurep_api.data_handler');
-        $dataHandler->setFilters($routeAnalyzer->extractFilters($action['class']));
+        $dataHandler->setFilters($routeAnalyzer->extractFilters($action['class'], $request));
         $statusCode = 200;
         switch ($action['action']) {
             case Action::GET_SINGLE:
