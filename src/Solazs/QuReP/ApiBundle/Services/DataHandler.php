@@ -72,7 +72,7 @@ class DataHandler
     private function walkJoinFilterProp(array $prop, QueryBuilder &$qb, $joinCntr = 0)
     {
         if ($prop['children'] != null) {
-            $qb->innerJoin('ent' . ($joinCntr == 0 ? '' : $joinCntr) . '.' . $prop['name'], 'ent' . ++$joinCntr);
+            $qb->leftJoin('ent' . ($joinCntr == 0 ? '' : $joinCntr) . '.' . $prop['name'], 'ent' . ++$joinCntr);
             $this->walkJoinFilterProp($prop['children'], $qb, $joinCntr);
         }
     }
