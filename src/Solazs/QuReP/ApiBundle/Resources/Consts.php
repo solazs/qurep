@@ -15,5 +15,5 @@ class Consts
     const formProp = 1;
     const singleProp = 2;
     const pluralProp = 3;
-    const validOperands = ['isnull', 'isnotnull', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte'];
+    const validOperands = ['isnull', 'isnotnull', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'notlike'];
 }
