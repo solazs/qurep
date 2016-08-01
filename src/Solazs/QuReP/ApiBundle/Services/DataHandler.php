@@ -132,6 +132,7 @@ class DataHandler
 
     function bulkUpdate(string $entityClass, array $postData = array())
     {
+
         if (!is_array($postData)) {
             throw new BadRequestHttpException('Data is not an array');
         }
@@ -139,6 +140,8 @@ class DataHandler
             throw new BadRequestHttpException('Data is an empty array');
         }
         $returnData = [];
+
+        //TODO: implement this with embedded forms
         foreach ($postData as $item) {
             if (array_key_exists('id', $item)) {
                 $data = $item;
