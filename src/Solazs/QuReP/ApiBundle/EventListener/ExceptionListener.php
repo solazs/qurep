@@ -9,6 +9,7 @@
 namespace Solazs\QuReP\ApiBundle\EventListener;
 
 
+use Psr\Log\LoggerInterface;
 use Solazs\QuReP\ApiBundle\Exception\ExceptionConsts;
 use Solazs\QuReP\ApiBundle\Exception\FormErrorException;
 use Solazs\QuReP\ApiBundle\Exception\IQuRePException;
@@ -20,10 +21,17 @@ use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundE
 
 class ExceptionListener
 {
+    protected $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
+        $level = 'info';
 
         if ($exception instanceof IQuRePException) {
             // Custom QuReP exceptions
@@ -68,6 +76,7 @@ class ExceptionListener
                 )
               ), ExceptionConsts::UNAUTHORIZED
             );
+            $level = 'warning';
         } elseif ($exception instanceof NotFoundHttpException) {
             // 404
             $response = new Response(
@@ -89,7 +98,14 @@ class ExceptionListener
                 )
               )
             );
+            $level = 'error';
         }
+
+        $this->logger->$level(
+          get_class($exception).' caught, returning error message. Exception message: ' . $exception->getMessage(),
+          $level == 'error' ?
+            ['stackTrace' => $exception->getTraceAsString()] : []
+        );
 
         $response->headers->set("content-type", "application/json");
 

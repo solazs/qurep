@@ -11,12 +11,12 @@ namespace Solazs\QuReP\ApiBundle\Resources;
 
 abstract class Action
 {
-    const GET_SINGLE = 0;
-    const GET_COLLECTION = 1;
-    const POST_SINGLE = 2;
-    const POST_COLLECTION = 3;
-    const UPDATE_SINGLE = 4;
-    const UPDATE_COLLECTION = 5;
-    const DELETE_SINGLE = 6;
-    const DELETE_COLLECTION = 7;
+    const GET_SINGLE = 'GET_SINGLE';
+    const GET_COLLECTION = 'GET_COLLECTION';
+    const POST_SINGLE = 'POST_SINGLE';
+    const POST_COLLECTION = 'POST_COLLECTION';
+    const UPDATE_SINGLE = 'UPDATE_SINGLE';
+    const UPDATE_COLLECTION = 'UPDATE_COLLECTION';
+    const DELETE_SINGLE = 'DELETE_SINGLE';
+    const DELETE_COLLECTION = 'DELETE_COLLECTION';
 }

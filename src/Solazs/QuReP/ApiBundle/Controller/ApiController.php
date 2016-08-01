@@ -17,8 +17,11 @@ class ApiController extends Controller
      * @param string  $apiRoute
      * @return array
      */
-    public function indexAction(Request $request, $apiRoute)
+    public function indexAction(Request $request, string $apiRoute)
     {
+        /* @var $logger \Monolog\Logger */
+        $logger = $this->get('logger');
+        $logger->info("ApiController:indexAction invoked with route: ".$apiRoute);
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');
         $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
         $dataHandler = $this->get('qurep_api.data_handler');

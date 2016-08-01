@@ -16,7 +16,7 @@ class FormErrorException extends \Exception
     public function __construct(array $errorArray, $code = 400, \Exception $previous = null)
     {
         $this->errorArray = $errorArray;
-        parent::__construct("", $code, $previous);
+        parent::__construct(var_export($this->errorArray, true), $code, $previous);
     }
 
     /**

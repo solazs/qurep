@@ -9,6 +9,7 @@
 namespace Solazs\QuReP\ApiBundle\Services;
 
 
+use Psr\Log\LoggerInterface;
 use Solazs\QuReP\ApiBundle\Exception\RouteException;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
@@ -20,10 +21,12 @@ class RouteAnalyzer
 {
     protected $entities = null;
     protected $entityParser;
+    protected $logger;
 
-    function __construct(EntityParser $entityParser)
+    function __construct(EntityParser $entityParser, LoggerInterface $logger)
     {
         $this->entityParser = $entityParser;
+        $this->logger = $logger;
     }
 
     public function setConfig($entities)
@@ -92,8 +95,17 @@ class RouteAnalyzer
         }
 
         if ($action === null) {
+            $this->logger->debug(
+              'RouteAnalyzer: Could not determine action to take. Class: '.$class.', route: '.$apiRoute.", method: "
+              .$request->getMethod()
+            );
             throw new RouteException('Could not determine action to take');
         }
+
+        $this->logger->info(
+          'RouteAnalyzer: class: '.$class.', id: '.($id === null ? 'null' : $id).', method: '.$request->getMethod()
+          .', taking action: '.$action
+        );
 
         return array('class' => $class, 'action' => $action, 'id' => $id);
     }
@@ -102,6 +114,8 @@ class RouteAnalyzer
     {
         foreach ($this->entities as $entity) {
             if ($string === $entity['entity_name']) {
+                $this->logger->debug('RouteAnalyzer: found entity: '.$entity['class']);
+
                 return $entity['class'];
             }
         }
@@ -115,7 +129,7 @@ class RouteAnalyzer
             $expandString = $request->query->get('expand');
             $bits = explode(',', $expandString);
             foreach ($bits as $bit) {
-                if (strpos($bit,'.') !== false){
+                if (strpos($bit, '.') !== false) {
                     $names = explode('.', $bit);
                     $expands[] = $this->walkArray($names, $entityClass);
                 } else {
@@ -125,8 +139,12 @@ class RouteAnalyzer
                 }
             }
 
+            $this->logger->debug('RouteAnalyzer: found expand: '.$expandString);
+
             return $expands;
         } else {
+            $this->logger->debug('RouteAnalyzer: no expands found');
+
             return [];
         }
     }
@@ -155,8 +173,10 @@ class RouteAnalyzer
             }
         }
         if (!$found) {
-            throw new BadRequestHttpException('Illegal ' . ($forFilter ? 'filter' : 'expand') . " literal: '" . $bit . "'");
+            throw new BadRequestHttpException('Illegal '.($forFilter ? 'filter' : 'expand')." literal: '".$bit."'");
         } else {
+            $this->logger->debug('RouteAnalyzer: found valid prop for '.($forFilter ? 'filter' : 'expand').': '.$bit);
+
             return $found;
         }
     }
@@ -164,15 +184,23 @@ class RouteAnalyzer
     public function extractFilters(string $entityClass, Request $request)
     {
         $queryValues = $this->fetchGetValuesFor("filter", $request);
+        $bitsToLog = '';
         $filters = array();
 
         foreach ($queryValues as $queryValue) {
             $bits = explode(";", $queryValue);
+            $bitsToLog = $bitsToLog.$queryValue.';';
             $subFilter = array();
             foreach ($bits as $bit) {
                 $subFilter[] = $this->explodeAndCheckFilter($bit, $entityClass);
             }
             $filters[] = $subFilter;
+        }
+
+        if (count($queryValues) > 0) {
+            $this->logger->debug('RouteAnalyzer: found filters: '.$bitsToLog);
+        } else {
+            $this->logger->debug('RouteAnalyzer: no filters found');
         }
 
         return $filters;
@@ -188,7 +216,7 @@ class RouteAnalyzer
             throw new BadRequestHttpException("Illegal filter expression: '".$filter."'");
         }
 
-        if (!in_array($bits[1], Consts::validOperands)){
+        if (!in_array($bits[1], Consts::validOperands)) {
             throw new BadRequestHttpException("Illegal filter operand in expression: '".$filter."'");
         }
 

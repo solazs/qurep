@@ -158,7 +158,7 @@ class DataHandler
         if (count($postData) == 0) {
             throw new BadRequestHttpException('No data supplied');
         }
-        $entity = $this->em->getRepository($entityClass)->find($id);
+        $entity = $this->em->getReference($entityClass, $id);
         if (!$entity) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
@@ -229,7 +229,7 @@ class DataHandler
 
     function delete(string $entityClass, int $id = 0)
     {
-        $entity = $this->em->getRepository($entityClass)->find($id);
+        $entity = $this->em->getReference($entityClass, $id);
         if (!$entity) {
             throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
         }
