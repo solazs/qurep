@@ -29,7 +29,8 @@ class EntityExpander
                 $item = $this->fillEntity($expands, $entityClass, $item, $dataHandler);
             }
         } else {
-            $entity = $this->fillEntity($expands, $entityClass, $entity, $dataHandler);
+            $item = $this->fillEntity($expands, $entityClass, $entity, $dataHandler);
+            $entity = $item;
         }
 
         return $entity;

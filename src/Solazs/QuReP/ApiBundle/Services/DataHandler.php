@@ -14,6 +14,7 @@ use Doctrine\ORM\Internal\Hydration\ArrayHydrator;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -30,10 +31,10 @@ class DataHandler
     protected $filters;
 
     function __construct(
-        EntityManager $entityManager,
-        EntityFormBuilder $entityFormBuilder,
-        FormErrorsSerializer $formErrorsHandler,
-        EntityParser $entityParser
+      EntityManager $entityManager,
+      EntityFormBuilder $entityFormBuilder,
+      FormErrorsSerializer $formErrorsHandler,
+      EntityParser $entityParser
     ) {
         $this->em = $entityManager;
         $this->entityFormBuilder = $entityFormBuilder;
@@ -42,20 +43,40 @@ class DataHandler
         $this->filters = [];
     }
 
-    function getAll(string $entityClass)
+    function getAll(string $entityClass, array $paging)
     {
         $parameters = [];
         $qb = $this->em->createQueryBuilder();
         $conditions = $this->buildFilterSubQuery($qb, $parameters);
-        $qb->select($this->buildPropString($entityClass))
-            ->from($entityClass, 'ent');
+        $qb->select('ent')
+          ->from($entityClass, 'ent');
         $this->buildJoinSubQuery($qb);
+
+        $qb->setFirstResult($paging['offset']);
+        $qb->setMaxResults($paging['limit']);
+
         if (count($conditions) > 0) {
             $qb->where($conditions)
-                ->setParameters($parameters);
+              ->setParameters($parameters);
         }
 
-        $data = $qb->getQuery()->getResult();
+        $query = $qb->getQuery();
+
+        $paginator = new Paginator($query);
+
+        $data = [
+          'meta' => [
+            'limit'  => $paging['limit'],
+            'offset' => $paging['offset'],
+            'count'  => count($paginator),
+          ],
+          'data' => [],
+        ];
+        foreach ($paginator as $item) {
+            array_push($data['data'], $item);
+        }
+
+        //$data = $qb->getQuery()->getResult();
 
         return $data;
     }
@@ -72,7 +93,7 @@ class DataHandler
     private function walkJoinFilterProp(array $prop, QueryBuilder &$qb, $joinCntr = 0)
     {
         if ($prop['children'] != null) {
-            $qb->leftJoin('ent' . ($joinCntr == 0 ? '' : $joinCntr) . '.' . $prop['name'], 'ent' . ++$joinCntr);
+            $qb->leftJoin('ent'.($joinCntr == 0 ? '' : $joinCntr).'.'.$prop['name'], 'ent'.++$joinCntr);
             $this->walkJoinFilterProp($prop['children'], $qb, $joinCntr);
         }
     }
@@ -84,9 +105,11 @@ class DataHandler
             $andConditions = [];
             foreach ($filterGrp as $filter) {
                 $propName = $this->walkFilterProp($filter["prop"]);
-                $andConditions[] = call_user_func_array([$qb->expr(), $filter['operand']],
-                    [$propName, ':' . str_replace('.', '_', $propName) . '_param']);
-                $parameters[':' . str_replace('.', '_', $propName) . '_param'] = $filter['value'];
+                $andConditions[] = call_user_func_array(
+                  [$qb->expr(), $filter['operand']],
+                  [$propName, ':'.str_replace('.', '_', $propName).'_param']
+                );
+                $parameters[':'.str_replace('.', '_', $propName).'_param'] = $filter['value'];
             }
             if (count($andConditions) > 0) {
                 if (count($andConditions) > 1) {
@@ -113,21 +136,21 @@ class DataHandler
         if ($prop['children'] != null) {
             return $this->walkFilterProp($prop['children'], ++$joinCntr);
         } else {
-            return 'ent' . ($joinCntr == 0 ? '' : $joinCntr) . '.' . $prop['name'];
+            return 'ent'.($joinCntr == 0 ? '' : $joinCntr).'.'.$prop['name'];
         }
     }
 
-    protected function buildPropString(string $entityClass) : string
+    public function getFields(string $entityClass)
     {
-        $propString = 'ent.id';
+        $fields = [];
         $props = $this->entityParser->getProps($entityClass);
         foreach ($props as $prop) {
-            if ($prop['propType'] == Consts::prop || $prop['propType'] == Consts::formProp) {
-                $propString = $propString . ', ent.' . $prop['name'];
+            if (($prop['propType'] == Consts::prop || $prop['propType'] == Consts::formProp)) {
+                array_push($fields, $prop['name']);
             }
         }
 
-        return $propString;
+        return $fields;
     }
 
     function bulkUpdate(string $entityClass, array $postData = array())
@@ -163,7 +186,7 @@ class DataHandler
         }
         $entity = $this->em->getReference($entityClass, $id);
         if (!$entity) {
-            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
+            throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
         }
 
         /** @var Form $form */
@@ -186,15 +209,15 @@ class DataHandler
     function get(string $entityClass, int $id = 0)
     {
         $qb = $this->em->createQueryBuilder()
-            ->select($this->buildPropString($entityClass))
-            ->from($entityClass, 'ent');
+          ->select('ent')
+          ->from($entityClass, 'ent');
         $qb->where('ent.id = :id')
-            ->setParameter(':id', $id);
+          ->setParameter(':id', $id);
         $data = $qb->getQuery()
-            ->getOneOrNullResult();
+          ->getOneOrNullResult();
 
         if (!$data) {
-            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
+            throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
         }
 
         return $data;
@@ -234,7 +257,7 @@ class DataHandler
     {
         $entity = $this->em->getReference($entityClass, $id);
         if (!$entity) {
-            throw new NotFoundHttpException('Entity with id ' . $id . ' was not found in the database.');
+            throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
         }
         $this->em->remove($entity);
         $this->em->flush();
@@ -247,11 +270,11 @@ class DataHandler
             array_push($ids, $item['id']);
         }
         $this->em->createQueryBuilder()
-            ->delete($entityClass, 'ent')
-            ->where('ent.id IN (:ids)')
-            ->setParameter(':ids', $ids)
-            ->getQuery()
-            ->execute();
+          ->delete($entityClass, 'ent')
+          ->where('ent.id IN (:ids)')
+          ->setParameter(':ids', $ids)
+          ->getQuery()
+          ->execute();
     }
 
     /**

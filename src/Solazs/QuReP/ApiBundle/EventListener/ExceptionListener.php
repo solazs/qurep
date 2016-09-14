@@ -95,6 +95,7 @@ class ExceptionListener
                   'error'     => $exception->getMessage(),
                   'code'      => $exception->getCode(),
                   'exception' => get_class($exception),
+                  'trace' => $exception->getTraceAsString()
                 )
               )
             );

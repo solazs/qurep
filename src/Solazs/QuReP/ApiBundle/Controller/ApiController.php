@@ -2,7 +2,12 @@
 
 namespace Solazs\QuReP\ApiBundle\Controller;
 
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\Serializer;
+use JMS\SerializerBundle\DependencyInjection\JMSSerializerExtension;
+use JMS\SerializerBundle\JMSSerializerBundle;
 use Solazs\QuReP\ApiBundle\Resources\Action;
+use Solazs\QuReP\ApiBundle\Serializer\FieldsListExclusionStrategy;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +37,7 @@ class ApiController extends Controller
                 $data = $dataHandler->get($action['class'], $action['id']);
                 break;
             case Action::GET_COLLECTION:
-                $data = $dataHandler->getAll($action['class']);
+                $data = $dataHandler->getAll($action['class'], $routeAnalyzer->extractPaging($request));
                 break;
             case Action::UPDATE_SINGLE:
                 $postData = json_decode($request->getContent(), true);
@@ -80,8 +85,17 @@ class ApiController extends Controller
         $meta = [];
 
         if ($data !== null) {
+            if (array_key_exists('meta', $data)) {
+                foreach ($data['meta'] as $key => $value) {
+                    $meta[$key] = $value;
+                }
+                unset($data['meta']);
+                $data = $data['data'];
+            }
+
+            $expands = $routeAnalyzer->extractExpand($request, $action['class']);
             $data = $this->get("qurep_api.entity_expander")->expandEntity(
-              $routeAnalyzer->extractExpand($request, $action['class']),
+              $expands,
               $action['class'],
               $data,
               in_array(
@@ -94,9 +108,14 @@ class ApiController extends Controller
               ),
               $dataHandler
             );
-            $jsonData = $this->get('jms_serializer')->serialize(
+            /** @var $serializer Serializer */
+            $serializer = $this->get('jms_serializer');
+            $serializationContext = new SerializationContext();
+            $serializationContext->addExclusionStrategy(new FieldsListExclusionStrategy($dataHandler, $expands));
+            $jsonData = $serializer->serialize(
               ["data" => $data, "meta" => $meta],
-              "json"
+              "json",
+              $serializationContext
             );
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');

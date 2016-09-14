@@ -1,7 +1,6 @@
 parameters:
     qurep_api.caching.class: Doctrine\Common\Cache\ApcuCache
 
-    jms_serializer.doctrine_proxy_subscriber.class: Solazs\QuReP\ApiBundle\EventListener\SerializationEventListener
 
 services:
     qurep_api.route_analyzer:
@@ -32,7 +31,3 @@ services:
     qurep_api.entity_expander:
         class: Solazs\QuReP\ApiBundle\Services\EntityExpander
         arguments: [ "@doctrine.orm.entity_manager" ]
-    doctrineproxy_handler:
-        class: Solazs\QuReP\ApiBundle\Serializer\DoctrineProxyHandler
-        tags:
-            - { name: jms_serializer.subscribing_handler }

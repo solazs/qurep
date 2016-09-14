@@ -122,10 +122,38 @@ class RouteAnalyzer
         throw new RouteException('Could not find entity '.$string);
     }
 
+    public function extractPaging(Request $request) : array
+    {
+        $paging = [
+          'offset' => 0,
+          'limit'  => 100,
+        ];
+
+        if ($request->query->has('limit')) {
+            $limit = $request->query->get('limit');
+            if (is_nan($limit)) {
+                throw new RouteException('Invalid paging parameter! Limit must be a number.');
+            } else {
+                $paging['limit'] = $limit;
+            }
+        }
+
+        if ($request->query->has('offset')) {
+            $offset = $request->query->get('offset');
+            if (is_nan($offset)) {
+                throw new RouteException('Invalid paging parameter! Offset must be a number.');
+            } else {
+                $paging['offset'] = $offset;
+            }
+        }
+
+        return $paging;
+    }
+
     public function extractExpand(Request $request, string $entityClass) : array
     {
         $expands = [];
-        if ($request->query->has("expand")) {
+        if ($request->query->has('expand')) {
             $expandString = $request->query->get('expand');
             $bits = explode(',', $expandString);
             foreach ($bits as $bit) {
