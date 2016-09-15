@@ -15,7 +15,7 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
-use Solazs\QuReP\ApiBundle\Annotations\Entity\Type;
+use Solazs\QuReP\ApiBundle\Annotations\Entity\FormProperty;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 
 /**
@@ -86,7 +86,7 @@ class EntityParser
         foreach ($entityProperties as $entityProperty) {
             $field = [];
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
-                if ($annotation instanceof Type) {
+                if ($annotation instanceof FormProperty) {
                     $field["label"] =
                       $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
                     $field["options"] = $annotation->getOptions();

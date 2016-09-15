@@ -28,7 +28,7 @@ use Doctrine\Common\Annotations\AnnotationException;
  * @Annotation
  * @Annotation\Target("PROPERTY")
  */
-class Type
+class FormProperty
 {
     /** @var string
      * @Annotation\Required()
@@ -42,7 +42,7 @@ class Type
     public function __construct($values)
     {
         if (!array_key_exists('type', $values)) {
-            throw new AnnotationException('type property is required for Type Annotation');
+            throw new AnnotationException('type property is required for the FormProperty Annotation');
         }
         $this->type = $values['type'];
         if (!class_exists('\Symfony\Component\Form\Extension\Core\Type\\'.$this->type)) {
