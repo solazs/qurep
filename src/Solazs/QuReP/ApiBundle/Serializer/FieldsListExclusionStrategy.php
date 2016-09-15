@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: solazs
- * Date: 2016.09.14.
- * Time: 14:38
- */
 
 namespace Solazs\QuReP\ApiBundle\Serializer;
 
@@ -18,7 +12,7 @@ use Solazs\QuReP\ApiBundle\Services\DataHandler;
 /**
  * Class FieldsListExclusionStrategy
  *
- * Exclusion strategy for whitelisting fields dureing serialization.
+ * Exclusion strategy for whitelisting fields during serialization.
  * Only the shouldSkipProperty function is implemented.
  *
  * @package Solazs\QuReP\ApiBundle\Serializer
@@ -38,9 +32,10 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
      * Whether the class should be skipped.
      * Returns false as we are only concerned about properties here.
      *
-     * @param ClassMetadata $metadata
+     * @param ClassMetadata           $metadata
      *
-     * @return boolean
+     * @param \JMS\Serializer\Context $context
+     * @return bool
      */
     public function shouldSkipClass(ClassMetadata $metadata, Context $context)
     {
@@ -51,9 +46,10 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
      * Whether the property should be skipped.
      * Queries default fields from the dataHandler and the expands.
      *
-     * @param PropertyMetadata $property
+     * @param PropertyMetadata        $property
      *
-     * @return boolean
+     * @param \JMS\Serializer\Context $context
+     * @return bool
      */
     public function shouldSkipProperty(PropertyMetadata $property, Context $context)
     {
@@ -68,24 +64,26 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
         return (!(in_array($name, $fields)) && !($this->findProp($property->class, $name, $depth)));
     }
 
-    private function findProp(string $class, string $name, int $depth) : bool {
+    private function findProp(string $class, string $name, int $depth) : bool
+    {
         $cnt = 1;
         foreach ($this->expands as $expand) {
-            if ($this->walkExpand($expand, $class, $name, $depth, $cnt)){
+            if ($this->walkExpand($expand, $class, $name, $depth, $cnt)) {
                 return true;
             }
         }
+
         return false;
     }
 
     private function walkExpand(array $expand, string $class, string $name, int $depth, int $cnt) : bool
     {
-        if ($depth == $cnt && $expand['name'] == $name && $expand['class'] == $class){
+        if ($depth == $cnt && $expand['name'] == $name && $expand['class'] == $class) {
             return true;
         }
 
-        if ($expand['children'] != null && ($depth != $cnt)){
-            return $this->walkExpand($expand['children'], $class, $name, $depth, $cnt+1);
+        if ($expand['children'] != null && ($depth != $cnt)) {
+            return $this->walkExpand($expand['children'], $class, $name, $depth, $cnt + 1);
         }
 
         return false;

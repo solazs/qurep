@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2015.11.17.
- * Time: 0:27
- */
 
 namespace Solazs\QuReP\ApiBundle\EventListener;
 
@@ -108,7 +102,7 @@ class ExceptionListener
                   'error'     => $exception->getMessage(),
                   'code'      => $exception->getCode(),
                   'exception' => get_class($exception),
-                  'trace' => $exception->getTraceAsString()
+                  'trace'     => $exception->getTraceAsString(),
                 )
               ),
               500
@@ -117,7 +111,7 @@ class ExceptionListener
         }
 
         $this->logger->$level(
-          get_class($exception).' caught, returning error message. Exception message: ' . $exception->getMessage(),
+          get_class($exception).' caught, returning error message. Exception message: '.$exception->getMessage(),
           $level == 'error' ?
             ['stackTrace' => $exception->getTraceAsString()] : []
         );

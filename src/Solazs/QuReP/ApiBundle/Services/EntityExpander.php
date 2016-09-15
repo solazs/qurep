@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2016.02.19.
- * Time: 1:11
- */
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
@@ -77,7 +71,12 @@ class EntityExpander
             if (!array_key_exists($expand['name'], $entity)) {
                 $entity[$expand['name']] = [];
             }
-            $entity[$expand['name']] = $this->walkArray($expand['children'], $entityClass, $entity[$expand['name']], $dataHandler);
+            $entity[$expand['name']] = $this->walkArray(
+              $expand['children'],
+              $entityClass,
+              $entity[$expand['name']],
+              $dataHandler
+            );
         }
 
         return $entity;
@@ -85,7 +84,7 @@ class EntityExpander
 
     private function doFill(array $expand, string $entityClass, $entity, DataHandler $dataHandler)
     {
-        if (array_key_exists($expand['name'],$entity)){
+        if (array_key_exists($expand['name'], $entity)) {
             return $entity;
         }
         $getter = "get".strtoupper(substr($expand['name'], 0, 1)).substr($expand['name'], 1);

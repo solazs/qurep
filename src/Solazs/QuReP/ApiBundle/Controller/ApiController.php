@@ -27,7 +27,7 @@ class ApiController extends Controller
      * @Route("/{apiRoute}", requirements={"apiRoute"=".+"})
      * @param Request $request
      * @param string  $apiRoute
-     * @return array
+     * @return array|\Symfony\Component\HttpFoundation\Response
      */
     public function indexAction(Request $request, string $apiRoute)
     {

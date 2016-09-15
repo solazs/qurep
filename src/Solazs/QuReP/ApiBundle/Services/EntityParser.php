@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2016.02.06.
- * Time: 17:05
- */
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
@@ -68,7 +62,7 @@ class EntityParser
      *
      * The method returns an array of the detected fields with the following properties:
      *  - label      label to use on api
-     *  - propType   proptype
+     *  - propType   propType
      *  - name       name of property
      * The following properties are also listed if the prop is a formProp
      *  - type       form field type

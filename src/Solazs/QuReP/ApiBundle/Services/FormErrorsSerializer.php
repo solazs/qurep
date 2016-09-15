@@ -1,18 +1,18 @@
 <?php
-/**
- * Credit for Graceas: https://gist.github.com/Graceas/6505663
- */
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
 
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 
 
 /**
  * Class FormErrorsSerializer
  *
- * Custom serializer to render propery error messages when a form validation fails.
+ * Custom serializer to render property error messages when a form validation fails.
+ *
+ * Credit for Graceas: https://gist.github.com/Graceas/6505663
  *
  * @package Solazs\QuReP\ApiBundle\Services
  */
@@ -52,6 +52,7 @@ class FormErrorsSerializer
         $local_errors = array();
         foreach ($form as $key => $child) {
 
+            /** @var FormError $error */
             foreach ($child->getErrors() as $error) {
                 $local_errors[$key] = $error->getMessage();
             }

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2016.01.07.
- * Time: 23:41
- */
 
 namespace Solazs\QuReP\ApiBundle\Services;
 

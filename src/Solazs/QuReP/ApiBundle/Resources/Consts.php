@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2016.02.14.
- * Time: 16:45
- */
 
 namespace Solazs\QuReP\ApiBundle\Resources;
 
@@ -15,7 +9,7 @@ namespace Solazs\QuReP\ApiBundle\Resources;
  *
  * @package Solazs\QuReP\ApiBundle\Resources
  */
-class Consts
+abstract class Consts
 {
     const prop = 'prop';
     const formProp = 'formProp';

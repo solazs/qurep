@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2015.11.15.
- * Time: 21:27
- */
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
@@ -282,6 +276,32 @@ class RouteAnalyzer
         return $filters;
     }
 
+    /**
+     * As PHP (with Symfony following its lead) does not handle multiple GET parameters
+     * with the same name, a bit of tinkering is needed to be able to properly implement filters.
+     *
+     * @param                                           $key string name of the parameter to be extracted
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return array array of values for the key specified (empty if not found)
+     */
+    protected function fetchGetValuesFor(string $key, Request $request) : array
+    {
+        $values = array();
+
+        if ($request->server->has('QUERY_STRING') && strlen($request->server->get('QUERY_STRING')) > 0) {
+            $queryData = explode('&', $request->server->get('QUERY_STRING'));
+
+            foreach ($queryData as $param) {
+                list($name, $value) = explode('=', $param, 2);
+                if ($name == $key) {
+                    $values[] = urldecode($value);
+                }
+            }
+        }
+
+        return $values;
+    }
+
     private function explodeAndCheckFilter(string $filter, string $entityClass) : array
     {
         $bits = explode(',', $filter);
@@ -311,31 +331,5 @@ class RouteAnalyzer
         $filterExp['value'] = array_key_exists(2, $bits) ? $bits[2] : null;
 
         return $filterExp;
-    }
-
-    /**
-     * As PHP (with Symfony following its lead) does not handle multiple GET parameters
-     * with the same name, a bit of tinkering is needed to be able to properly implement filters.
-     *
-     * @param                                           $key string name of the parameter to be extracted
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return array array of values for the key specified (empty if not found)
-     */
-    protected function fetchGetValuesFor(string $key, Request $request) : array
-    {
-        $values = array();
-
-        if ($request->server->has('QUERY_STRING') && strlen($request->server->get('QUERY_STRING')) > 0) {
-            $queryData = explode('&', $request->server->get('QUERY_STRING'));
-
-            foreach ($queryData as $param) {
-                list($name, $value) = explode('=', $param, 2);
-                if ($name == $key) {
-                    $values[] = urldecode($value);
-                }
-            }
-        }
-
-        return $values;
     }
 }

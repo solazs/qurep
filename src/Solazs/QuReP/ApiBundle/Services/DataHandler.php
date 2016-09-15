@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2015.12.10.
- * Time: 20:51
- */
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
@@ -94,23 +88,6 @@ class DataHandler
      * ============================================== *
      */
 
-    private function buildJoinSubQuery(QueryBuilder &$qb)
-    {
-        foreach ($this->filters as $filterGrp) {
-            foreach ($filterGrp as $filter) {
-                $this->walkJoinFilterProp($filter['prop'], $qb);
-            }
-        }
-    }
-
-    private function walkJoinFilterProp(array $prop, QueryBuilder &$qb, $joinCntr = 0)
-    {
-        if ($prop['children'] != null) {
-            $qb->leftJoin('ent'.($joinCntr == 0 ? '' : $joinCntr).'.'.$prop['name'], 'ent'.++$joinCntr);
-            $this->walkJoinFilterProp($prop['children'], $qb, $joinCntr);
-        }
-    }
-
     private function buildFilterSubQuery(QueryBuilder $qb, array &$parameters)
     {
         $conditions = [];
@@ -153,9 +130,26 @@ class DataHandler
         }
     }
 
+    private function buildJoinSubQuery(QueryBuilder &$qb)
+    {
+        foreach ($this->filters as $filterGrp) {
+            foreach ($filterGrp as $filter) {
+                $this->walkJoinFilterProp($filter['prop'], $qb);
+            }
+        }
+    }
+
+    private function walkJoinFilterProp(array $prop, QueryBuilder &$qb, $joinCntr = 0)
+    {
+        if ($prop['children'] != null) {
+            $qb->leftJoin('ent'.($joinCntr == 0 ? '' : $joinCntr).'.'.$prop['name'], 'ent'.++$joinCntr);
+            $this->walkJoinFilterProp($prop['children'], $qb, $joinCntr);
+        }
+    }
+
     /**
-     * Returns the fields of the entity that shuold be returned by default (based on Type annotation).
-     * This means all properties except OneToOne, OneToMany and ManyToOne conections.
+     * Returns the fields of the entity that should be returned by default (based on Type annotation).
+     * This means all properties except OneToOne, OneToMany and ManyToOne connections.
      *
      * @param string $entityClass
      * @return array
@@ -174,7 +168,7 @@ class DataHandler
     }
 
     /**
-     * Bulk update. Determines wether the entity exists in the database (by querying its ID if there is any),
+     * Bulk update. Determines whether the entity exists in the database (by querying its ID if there is any),
      * then posts/updates accordingly.
      *
      * FIXME: implement this with embedded forms

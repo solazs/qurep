@@ -1,13 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: solazs
- * Date: 2015.12.22.
- * Time: 20:26
- *
- * This class is an annotation to be used in Entity classes to mark the type of the properties.
- * For available types see http://symfony.com/doc/current/reference/forms/types.html
- */
 
 namespace Solazs\QuReP\ApiBundle\Annotations\Entity;
 
@@ -16,14 +7,20 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\Common\Annotations\AnnotationException;
 
 /**
- * Annotation for properties of entities handled by QuReP.
+ * This annotation serves the purpose to mark which properties should be used to generate the Forms that will be used to
+ * insert/update data.
  *
- * Type parameter should be one of the Symfony FormTypes,
+ * Basically add this annotation to any properties you plan to POST to the entity in question.
+ *
+ * @property string type
+ * Should be one of the Symfony FormTypes (e.g. TextType for strings, or CheckboxType for boolean values),
  * for more see @link [http://symfony.com/doc/current/reference/forms/types.html]
  *
- * Options is the options array for the form type
+ * @property array  options
+ * The options array for the form type
  *
- * Label can be used to overwrite property names on the API.
+ * @property string label
+ * Can be used to overwrite property names on the API.
  *
  * @Annotation
  * @Annotation\Target("PROPERTY")
