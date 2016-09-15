@@ -8,7 +8,13 @@
 
 namespace Solazs\QuReP\ApiBundle\Resources;
 
-
+/**
+ * Class Consts
+ *
+ * Miscellaneous constants
+ *
+ * @package Solazs\QuReP\ApiBundle\Resources
+ */
 class Consts
 {
     const prop = 'prop';

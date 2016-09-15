@@ -9,6 +9,13 @@
 namespace Solazs\QuReP\ApiBundle\Exception;
 
 
+/**
+ * Class ExceptionConsts
+ *
+ * Contains constants for HTTP status codes
+ *
+ * @package Solazs\QuReP\ApiBundle\Exception
+ */
 class ExceptionConsts
 {
     const BADREQUEST = 400;

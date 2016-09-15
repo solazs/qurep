@@ -8,6 +8,14 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 use Symfony\Component\Form\FormInterface;
 
+
+/**
+ * Class FormErrorsSerializer
+ *
+ * Custom serializer to render propery error messages when a form validation fails.
+ *
+ * @package Solazs\QuReP\ApiBundle\Services
+ */
 class FormErrorsSerializer
 {
 

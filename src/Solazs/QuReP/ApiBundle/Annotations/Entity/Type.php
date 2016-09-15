@@ -16,6 +16,15 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\Common\Annotations\AnnotationException;
 
 /**
+ * Annotation for properties of entities handled by QuReP.
+ *
+ * Type parameter should be one of the Symfony FormTypes,
+ * for more see @link [http://symfony.com/doc/current/reference/forms/types.html]
+ *
+ * Options is the options array for the form type
+ *
+ * Label can be used to overwrite property names on the API.
+ *
  * @Annotation
  * @Annotation\Target("PROPERTY")
  */

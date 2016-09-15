@@ -18,9 +18,18 @@ use Doctrine\ORM\Mapping\OneToOne;
 use Solazs\QuReP\ApiBundle\Annotations\Entity\Type;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 
+/**
+ * Class EntityParser
+ *
+ * Parses and stores entity metadata.
+ *
+ * @package Solazs\QuReP\ApiBundle\Services
+ */
 class EntityParser
 {
+    /** @var \Doctrine\Common\Cache\Cache $cache */
     protected $cache;
+    /** @var \Doctrine\Common\Annotations\AnnotationReader $reader */
     protected $reader;
     protected $entities;
 
@@ -35,6 +44,12 @@ class EntityParser
         $this->entities = $entities;
     }
 
+    /**
+     * Fetches entity metadata from cache (or populates the cache if necessary)
+     *
+     * @param string $entityClass
+     * @return array
+     */
     public function getProps(string $entityClass) :array
     {
         if ($this->cache->contains($entityClass)) {
@@ -47,6 +62,21 @@ class EntityParser
         return $properties;
     }
 
+    /**
+     * Actually parses the entities listed in the QuReP configuration using reflection.
+     * Property types are listed in @link [\Solazs\QuReP\ApiBundle\Resources\Consts] [the Consts class]
+     *
+     * The method returns an array of the detected fields with the following properties:
+     *  - label      label to use on api
+     *  - propType   proptype
+     *  - name       name of property
+     * The following properties are also listed if the prop is a formProp
+     *  - type       form field type
+     *  - options    form field type options
+     *
+     * @param $entityClass
+     * @return array
+     */
     protected function parseProps($entityClass) : array
     {
         $properties = [];

@@ -10,12 +10,22 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * Class EntityFormBuilder
+ *
+ * The sole responsibility of this class is to create Symfony Forms for inserting/updating data.
+ *
+ * @package Solazs\QuReP\ApiBundle\Services
+ */
 class EntityFormBuilder
 {
+    /** @var \Symfony\Component\Form\FormFactory $formFactory */
     protected $formFactory;
+    /** @var \Solazs\QuReP\ApiBundle\Services\EntityParser $entityParser */
     protected $entityParser;
 
     public function __construct(FormFactory $formFactory, EntityParser $entityParser)
@@ -24,7 +34,15 @@ class EntityFormBuilder
         $this->entityParser = $entityParser;
     }
 
-    public function getForm($entityClass, $entity)
+    /**
+     * Creates a form based on $entity.
+     * To do this, $entityParser supplies the props of the class which are then mapped to form fields.
+     *
+     * @param $entityClass
+     * @param $entity
+     * @return \Symfony\Component\Form\Form
+     */
+    public function getForm($entityClass, $entity) : Form
     {
         $properties = $this->entityParser->getProps($entityClass);
 

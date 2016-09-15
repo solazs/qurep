@@ -17,6 +17,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 
+/**
+ * Analyzes the request and extracts information like
+ * paging, extract, filter parameters.
+ */
 class RouteAnalyzer
 {
     protected $entities = null;
@@ -29,12 +33,20 @@ class RouteAnalyzer
         $this->logger = $logger;
     }
 
-    public function setConfig($entities)
+    public function setConfig(array $entities)
     {
         $this->entities = $entities;
     }
 
-    public function getActionAndEntity(Request $request, $apiRoute)
+    /**
+     * Parse request string to get collection (thus the entity class) and the action we're requested to execute.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param string                                    $apiRoute
+     * @return array('class' => $class, 'action' => $action, 'id' => $id)
+     * @throws \Solazs\QuReP\ApiBundle\Exception\RouteException
+     */
+    public function getActionAndEntity(Request $request, string $apiRoute) : array
     {
         $class = null;
         $isBulk = false;
@@ -42,20 +54,27 @@ class RouteAnalyzer
         $method = $request->getMethod();
 
         if (strpos($apiRoute, '/') === false) {
+            // No / in route, this is the entity name.
             $class = $this->getEntityClassFromString($apiRoute);
+
         } else {
             if (strpos($apiRoute, '/') != strrpos($apiRoute, '/')) {
-                throw new RouteException('Route '.$apiRoute.' is invalid, too many / signs.');
+                // Nested routes are not supported ATM.
+                throw new RouteException('Route '.$apiRoute.' is invalid, too many / in route.');
             } else {
+                // This request is either bulk or has an ID at the end.
                 $class = $this->getEntityClassFromString(substr($apiRoute, 0, strpos($apiRoute, '/')));
                 $id = substr($apiRoute, strpos($apiRoute, '/') + 1, strlen($apiRoute) - strpos($apiRoute, '/'));
                 if ($id === "bulk") {
+                    // Bulk it is!
                     $isBulk = true;
                 }
             }
         }
 
         $action = null;
+
+        // Determine action to take.
 
         if ($method === "GET") {
             if ($isBulk) {
@@ -110,7 +129,7 @@ class RouteAnalyzer
         return array('class' => $class, 'action' => $action, 'id' => $id);
     }
 
-    private function getEntityClassFromString($string)
+    private function getEntityClassFromString(string $string) : string
     {
         foreach ($this->entities as $entity) {
             if ($string === $entity['entity_name']) {
@@ -122,6 +141,14 @@ class RouteAnalyzer
         throw new RouteException('Could not find entity '.$string);
     }
 
+    /**
+     * Extracts paging parameters from request.
+     * Returns sensible defaults if values are absent from the request.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return array('offset'=>0,'limit=>100)
+     * @throws \Solazs\QuReP\ApiBundle\Exception\RouteException
+     */
     public function extractPaging(Request $request) : array
     {
         $paging = [
@@ -150,6 +177,20 @@ class RouteAnalyzer
         return $paging;
     }
 
+    /**
+     * Extracts and validates extract parameters from the request.
+     * Returned data is an array of arrays with the following format
+     * array(
+     * 'name'=>$name,
+     * 'label'=>$label,
+     * 'propType'=>$propType,
+     * 'children'=>array|null // recursive array or null
+     * )
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param string                                    $entityClass
+     * @return array
+     */
     public function extractExpand(Request $request, string $entityClass) : array
     {
         $expands = [];
@@ -177,7 +218,7 @@ class RouteAnalyzer
         }
     }
 
-    private function walkArray(array $propNames, string $entityClass, bool $forFilter = false)
+    private function walkArray(array $propNames, string $entityClass, bool $forFilter = false) : array
     {
         $ret = $this->verifyPropName($propNames[0], $entityClass, $forFilter);
         if (count($propNames) == 1) {
@@ -190,7 +231,7 @@ class RouteAnalyzer
         return $ret;
     }
 
-    protected function verifyPropName(string $bit, string $entityClass, bool $forFilter = false)
+    private function verifyPropName(string $bit, string $entityClass, bool $forFilter = false) : array
     {
         $found = false;
         foreach ($this->entityParser->getProps($entityClass) as $prop) {
@@ -209,7 +250,14 @@ class RouteAnalyzer
         }
     }
 
-    public function extractFilters(string $entityClass, Request $request)
+    /**
+     * Extracts and validates filter parameters from the request.
+     *
+     * @param string                                    $entityClass
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return array
+     */
+    public function extractFilters(string $entityClass, Request $request) : array
     {
         $queryValues = $this->fetchGetValuesFor("filter", $request);
         $bitsToLog = '';
@@ -234,7 +282,7 @@ class RouteAnalyzer
         return $filters;
     }
 
-    protected function explodeAndCheckFilter($filter, $entityClass)
+    private function explodeAndCheckFilter(string $filter, string $entityClass) : array
     {
         $bits = explode(',', $filter);
         $bits[1] = strtolower($bits[1]);
@@ -269,10 +317,11 @@ class RouteAnalyzer
      * As PHP (with Symfony following its lead) does not handle multiple GET parameters
      * with the same name, a bit of tinkering is needed to be able to properly implement filters.
      *
-     * @param $key string name of the parameter to be extracted
+     * @param                                           $key string name of the parameter to be extracted
+     * @param \Symfony\Component\HttpFoundation\Request $request
      * @return array array of values for the key specified (empty if not found)
      */
-    protected function fetchGetValuesFor(string $key, Request $request)
+    protected function fetchGetValuesFor(string $key, Request $request) : array
     {
         $values = array();
 

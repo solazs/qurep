@@ -12,9 +12,20 @@ namespace Solazs\QuReP\ApiBundle\Services;
 use Doctrine\ORM\EntityManagerInterface;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 
+/**
+ * Class EntityExpander
+ *
+ * This class is responsible for the expand functionality.
+ * It walks through the expand statements and fills the entity (entities) as necessary with additional data.
+ *
+ * FIXME: create queries instead of invoking getters
+ *
+ * @package Solazs\QuReP\ApiBundle\Services
+ */
 class EntityExpander
 {
-    protected $em;
+    /** @var \Doctrine\ORM\EntityManagerInterface $em */
+    private $em;
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -22,7 +33,17 @@ class EntityExpander
 
     }
 
-    public function expandEntity($expands, $entityClass, $entity, $isCollection, DataHandler $dataHandler)
+    /**
+     * Recursively walk through expand statements and fill necessary properties of the supplied entity.
+     *
+     * @param array                                        $expands
+     * @param string                                       $entityClass
+     * @param                                              $entity
+     * @param bool                                         $isCollection
+     * @param \Solazs\QuReP\ApiBundle\Services\DataHandler $dataHandler
+     * @return mixed
+     */
+    public function expandEntity(array $expands, string $entityClass, $entity, bool $isCollection, DataHandler $dataHandler)
     {
         if ($isCollection) {
             foreach ($entity as &$item) {
@@ -36,7 +57,11 @@ class EntityExpander
         return $entity;
     }
 
-    protected function fillEntity($expands, $entityClass, $entity, DataHandler $dataHandler)
+    /* ============================================================= *
+     * Functions required to do the recursive walking of the expands *
+     * ============================================================= *
+     */
+    private function fillEntity($expands, $entityClass, $entity, DataHandler $dataHandler)
     {
         foreach ($expands as $expand) {
             $entity = $this->walkArray($expand, $entityClass, $entity, $dataHandler);

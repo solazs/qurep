@@ -19,6 +19,13 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 
+/**
+ * Class ExceptionListener
+ *
+ * Class to catch all exceptions and return json formatted error response
+ *
+ * @package Solazs\QuReP\ApiBundle\EventListener
+ */
 class ExceptionListener
 {
     protected $logger;
@@ -28,9 +35,15 @@ class ExceptionListener
         $this->logger = $logger;
     }
 
+    /**
+     * Listener for exception kernel event
+     *
+     * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
+     */
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
+        // Default logging level
         $level = 'info';
 
         if ($exception instanceof IQuRePException) {
@@ -88,7 +101,7 @@ class ExceptionListener
               ), ExceptionConsts::NOTFOUNDERROR
             );
         } else {
-            // catch others
+            // catch others (500)
             $response = new Response(
               json_encode(
                 array(
@@ -97,7 +110,8 @@ class ExceptionListener
                   'exception' => get_class($exception),
                   'trace' => $exception->getTraceAsString()
                 )
-              )
+              ),
+              500
             );
             $level = 'error';
         }

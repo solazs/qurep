@@ -8,7 +8,13 @@
 
 namespace Solazs\QuReP\ApiBundle\Resources;
 
-
+/**
+ * Class Action
+ *
+ * Contains constants for actions
+ *
+ * @package Solazs\QuReP\ApiBundle\Resources
+ */
 abstract class Action
 {
     const GET_SINGLE = 'GET_SINGLE';

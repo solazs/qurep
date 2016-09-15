@@ -15,6 +15,14 @@ use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 use Solazs\QuReP\ApiBundle\Services\DataHandler;
 
+/**
+ * Class FieldsListExclusionStrategy
+ *
+ * Exclusion strategy for whitelisting fields dureing serialization.
+ * Only the shouldSkipProperty function is implemented.
+ *
+ * @package Solazs\QuReP\ApiBundle\Serializer
+ */
 class FieldsListExclusionStrategy implements ExclusionStrategyInterface
 {
     private $dataHandler = [];
@@ -28,6 +36,7 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
 
     /**
      * Whether the class should be skipped.
+     * Returns false as we are only concerned about properties here.
      *
      * @param ClassMetadata $metadata
      *
@@ -40,6 +49,7 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
 
     /**
      * Whether the property should be skipped.
+     * Queries default fields from the dataHandler and the expands.
      *
      * @param PropertyMetadata $property
      *

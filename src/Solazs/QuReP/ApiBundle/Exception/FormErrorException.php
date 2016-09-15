@@ -1,14 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baloo
- * Date: 2016.02.06.
- * Time: 18:55
- */
 
 namespace Solazs\QuReP\ApiBundle\Exception;
 
 
+/**
+ * Class FormErrorException
+ *
+ * Custom exception for Form errors to guarantee proper serialization of form errors.
+ *
+ * @package Solazs\QuReP\ApiBundle\Exception
+ */
 class FormErrorException extends \Exception
 {
     private $errorArray;

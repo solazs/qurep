@@ -10,9 +10,6 @@ namespace Solazs\QuReP\ApiBundle\Services;
 
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Internal\Hydration\ArrayHydrator;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
@@ -23,10 +20,13 @@ use Solazs\QuReP\ApiBundle\Exception\FormErrorException;
 
 class DataHandler
 {
-    /* @var $em \Doctrine\ORM\EntityManager */
+    /** @var \Doctrine\ORM\EntityManager $em */
     protected $em;
+    /** @var \Solazs\QuReP\ApiBundle\Services\EntityFormBuilder $entityFormBuilder */
     protected $entityFormBuilder;
+    /** @var \Solazs\QuReP\ApiBundle\Services\FormErrorsSerializer $formErrorsHandler */
     protected $formErrorsHandler;
+    /** @var \Solazs\QuReP\ApiBundle\Services\EntityParser $entityParser */
     protected $entityParser;
     protected $filters;
 
@@ -43,6 +43,14 @@ class DataHandler
         $this->filters = [];
     }
 
+    /**
+     * GET a collection
+     * Builds a query based on paging and filters and executes it, then returns the data.
+     *
+     * @param string $entityClass
+     * @param array  $paging
+     * @return array
+     */
     function getAll(string $entityClass, array $paging)
     {
         $parameters = [];
@@ -81,7 +89,12 @@ class DataHandler
         return $data;
     }
 
-    protected function buildJoinSubQuery(QueryBuilder &$qb)
+    /* ============================================== *
+     * Functions necessary to build the query in GETs *
+     * ============================================== *
+     */
+
+    private function buildJoinSubQuery(QueryBuilder &$qb)
     {
         foreach ($this->filters as $filterGrp) {
             foreach ($filterGrp as $filter) {
@@ -98,7 +111,7 @@ class DataHandler
         }
     }
 
-    protected function buildFilterSubQuery(QueryBuilder $qb, array &$parameters)
+    private function buildFilterSubQuery(QueryBuilder $qb, array &$parameters)
     {
         $conditions = [];
         foreach ($this->filters as $filterGrp) {
@@ -140,6 +153,13 @@ class DataHandler
         }
     }
 
+    /**
+     * Returns the fields of the entity that shuold be returned by default (based on Type annotation).
+     * This means all properties except OneToOne, OneToMany and ManyToOne conections.
+     *
+     * @param string $entityClass
+     * @return array
+     */
     public function getFields(string $entityClass)
     {
         $fields = [];
@@ -153,7 +173,17 @@ class DataHandler
         return $fields;
     }
 
-    function bulkUpdate(string $entityClass, array $postData = array())
+    /**
+     * Bulk update. Determines wether the entity exists in the database (by querying its ID if there is any),
+     * then posts/updates accordingly.
+     *
+     * FIXME: implement this with embedded forms
+     *
+     * @param string $entityClass
+     * @param array  $postData Data from the request body
+     * @return array
+     */
+    public function bulkUpdate(string $entityClass, array $postData = array())
     {
 
         if (!is_array($postData)) {
@@ -164,7 +194,6 @@ class DataHandler
         }
         $returnData = [];
 
-        //TODO: implement this with embedded forms
         foreach ($postData as $item) {
             if (array_key_exists('id', $item)) {
                 $data = $item;
@@ -280,7 +309,7 @@ class DataHandler
     /**
      * @param array $filters
      */
-    public function setFilters($filters)
+    public function setFilters(array $filters)
     {
         $this->filters = $filters;
     }

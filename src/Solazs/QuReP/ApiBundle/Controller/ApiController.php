@@ -4,19 +4,26 @@ namespace Solazs\QuReP\ApiBundle\Controller;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
-use JMS\SerializerBundle\DependencyInjection\JMSSerializerExtension;
-use JMS\SerializerBundle\JMSSerializerBundle;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Solazs\QuReP\ApiBundle\Serializer\FieldsListExclusionStrategy;
+use Solazs\QuReP\ApiBundle\Services\DataHandler;
+use Solazs\QuReP\ApiBundle\Services\RouteAnalyzer;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
+
+/**
+ * Main controller of QuReP.
+ * Handles all calls, determines action to take and creates response.
+ **/
 class ApiController extends Controller
 {
     /**
+     * Main action used to catch all requests.
+     *
      * @Route("/{apiRoute}", requirements={"apiRoute"=".+"})
      * @param Request $request
      * @param string  $apiRoute
@@ -24,13 +31,20 @@ class ApiController extends Controller
      */
     public function indexAction(Request $request, string $apiRoute)
     {
-        /* @var $logger \Monolog\Logger */
+        /* @var \Monolog\Logger $logger */
         $logger = $this->get('logger');
         $logger->info("ApiController:indexAction invoked with route: ".$apiRoute);
+
+        /** @var RouteAnalyzer $routeAnalyzer */
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');
-        $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
+        $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute); // Determine class and action to take
+
+        /** @var DataHandler $dataHandler */
         $dataHandler = $this->get('qurep_api.data_handler');
-        $dataHandler->setFilters($routeAnalyzer->extractFilters($action['class'], $request));
+        $dataHandler->setFilters($routeAnalyzer->extractFilters($action['class'], $request)); // Fetch filter expressions
+
+
+        // Execute action using the DataHandler
         $statusCode = 200;
         switch ($action['action']) {
             case Action::GET_SINGLE:
@@ -81,10 +95,15 @@ class ApiController extends Controller
                 $data = null;
         }
 
+        // Create response
+
         $response = new Response();
         $meta = [];
 
         if ($data !== null) {
+            // We have some data to return
+
+            // Fetch meta from the data if any. TODO: this is a bit hacky.
             if (array_key_exists('meta', $data)) {
                 foreach ($data['meta'] as $key => $value) {
                     $meta[$key] = $value;
@@ -93,6 +112,7 @@ class ApiController extends Controller
                 $data = $data['data'];
             }
 
+            // Fill in expanded data
             $expands = $routeAnalyzer->extractExpand($request, $action['class']);
             $data = $this->get("qurep_api.entity_expander")->expandEntity(
               $expands,
@@ -108,8 +128,12 @@ class ApiController extends Controller
               ),
               $dataHandler
             );
+
+            //Serialization
             /** @var $serializer Serializer */
             $serializer = $this->get('jms_serializer');
+            // We need to create a custom SerializationContext to be able to whitelist properties in the response
+            // TODO: projection (or field list) should be exposed on the API
             $serializationContext = new SerializationContext();
             $serializationContext->addExclusionStrategy(new FieldsListExclusionStrategy($dataHandler, $expands));
             $jsonData = $serializer->serialize(
@@ -121,8 +145,11 @@ class ApiController extends Controller
             $response->headers->set('Content-type', 'application/json');
             $response->setStatusCode($statusCode);
         } else {
+            // Empty response
             $response->setStatusCode(204);
         }
+
+        // Send data. (TBD: Might be more elegant to write a custom view layer)
 
         return $response;
     }
