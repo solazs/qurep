@@ -114,20 +114,24 @@ class ApiController extends Controller
 
             // Fill in expanded data
             $expands = $routeAnalyzer->extractExpand($request, $action['class']);
-            $data = $this->get("qurep_api.entity_expander")->expandEntity(
-              $expands,
-              $action['class'],
-              $data,
-              in_array(
-                $action['action'],
-                [
-                  Action::DELETE_COLLECTION,
-                  Action::GET_COLLECTION,
-                  Action::UPDATE_COLLECTION,
-                ]
-              ),
-              $dataHandler
-            );
+            if (count($expands) > 0) {
+                $data = $this->get("qurep_api.entity_expander")->expandEntity(
+                  $expands,
+                  $action['class'],
+                  $data,
+                  in_array(
+                    $action['action'],
+                    [
+                      Action::DELETE_COLLECTION,
+                      Action::GET_COLLECTION,
+                      Action::UPDATE_COLLECTION,
+                    ]
+                  ),
+                  $dataHandler
+                );
+            } else {
+                $logger->debug('ApiController:indexAction expands array is empty, skipping expandEntity call');
+            }
 
             //Serialization
             /** @var $serializer Serializer */
