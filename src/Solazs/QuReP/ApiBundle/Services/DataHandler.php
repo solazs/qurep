@@ -9,6 +9,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Solazs\QuReP\ApiBundle\Exception\FormErrorException;
 
@@ -301,7 +302,26 @@ class DataHandler
 
     function meta(string $entityClass): array
     {
-        return $this->entityParser->getProps($entityClass);
+        $props = $this->entityParser->getProps($entityClass);
+        $success = usort(
+          $props,
+          function ($a, $b) {
+              return strcmp($a['label'], $b['label']);
+          }
+        );
+        if (!$success) {
+            throw new HttpException(500, 'Failed to sort metadata');
+        }
+
+        foreach ($props as &$prop) {
+            $success = ksort($prop);
+
+            if (!$success) {
+                throw new HttpException(500, 'Failed to sort metadata');
+            }
+        }
+
+        return $props;
     }
 
     /**
