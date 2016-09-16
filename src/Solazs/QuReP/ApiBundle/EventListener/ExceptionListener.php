@@ -23,10 +23,12 @@ use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundE
 class ExceptionListener
 {
     protected $logger;
+    protected $env;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, string $env)
     {
         $this->logger = $logger;
+        $this->env = $env;
     }
 
     /**
@@ -96,15 +98,16 @@ class ExceptionListener
             );
         } else {
             // catch others (500)
+            $payload = [
+              'error'     => $exception->getMessage(),
+              'code'      => $exception->getCode(),
+              'exception' => get_class($exception),
+            ];
+            if ($this->env === 'dev') {
+                $payload['trace'] = $exception->getTraceAsString();
+            }
             $response = new Response(
-              json_encode(
-                array(
-                  'error'     => $exception->getMessage(),
-                  'code'      => $exception->getCode(),
-                  'exception' => get_class($exception),
-                  'trace'     => $exception->getTraceAsString(),
-                )
-              ),
+              json_encode($payload),
               500
             );
             $level = 'error';

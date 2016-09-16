@@ -13,7 +13,7 @@ services:
         class: Solazs\QuReP\ApiBundle\EventListener\ExceptionListener
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
-        arguments: [ "@logger" ]
+        arguments: [ "@logger", "%kernel.environment%" ]
     qurep_api.entity_form_builder:
         class: Solazs\QuReP\ApiBundle\Services\EntityFormBuilder
         arguments: [ "@form.factory", "@qurep_api.entity_parser" ]
