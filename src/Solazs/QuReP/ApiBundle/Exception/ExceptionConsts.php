@@ -17,4 +17,5 @@ abstract class ExceptionConsts
     const FORBIDDEN = 403;
     const NOTFOUNDERROR = 404;
     const ROUTINGERROR = 1000;
+    const METHODNOTALLOWED = 405;
 }

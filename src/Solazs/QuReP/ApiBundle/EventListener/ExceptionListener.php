@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 
 /**
@@ -96,6 +97,17 @@ class ExceptionListener
                 )
               ), ExceptionConsts::NOTFOUNDERROR
             );
+        } elseif ($exception instanceof MethodNotAllowedException) {
+            // 405
+            $response = new Response(
+              json_encode(
+                array(
+                  'error' => $exception->getMessage(),
+                  'code'  => ExceptionConsts::METHODNOTALLOWED,
+                )
+              ), ExceptionConsts::METHODNOTALLOWED
+            );
+            $level = 'warning';
         } else {
             // catch others (500)
             $payload = [
