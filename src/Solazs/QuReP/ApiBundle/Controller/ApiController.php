@@ -41,17 +41,21 @@ class ApiController extends Controller
 
         /** @var DataHandler $dataHandler */
         $dataHandler = $this->get('qurep_api.data_handler');
-        $dataHandler->setFilters($routeAnalyzer->extractFilters($action['class'], $request)); // Fetch filter expressions
+        $dataHandler->setupClass(
+          $routeAnalyzer->extractFilters($action['class'], $request),
+          $routeAnalyzer->extractPaging($request)
+        );
 
 
         // Execute action using the DataHandler
         $statusCode = 200;
+        $meta = [];
         switch ($action['action']) {
             case Action::GET_SINGLE:
                 $data = $dataHandler->get($action['class'], $action['id']);
                 break;
             case Action::GET_COLLECTION:
-                $data = $dataHandler->getAll($action['class'], $routeAnalyzer->extractPaging($request));
+                $data = $dataHandler->getAll($action['class'], $meta);
                 break;
             case Action::UPDATE_SINGLE:
                 $postData = json_decode($request->getContent(), true);
@@ -98,19 +102,9 @@ class ApiController extends Controller
         // Create response
 
         $response = new Response();
-        $meta = [];
 
         if ($data !== null) {
             // We have some data to return
-
-            // Fetch meta from the data if any. TODO: this is a bit hacky.
-            if (array_key_exists('meta', $data)) {
-                foreach ($data['meta'] as $key => $value) {
-                    $meta[$key] = $value;
-                }
-                unset($data['meta']);
-                $data = $data['data'];
-            }
 
             // Fill in expanded data
             $expands = $routeAnalyzer->extractExpand($request, $action['class']);
@@ -153,7 +147,7 @@ class ApiController extends Controller
             $response->setStatusCode(204);
         }
 
-        // Send data. (TBD: Might be more elegant to write a custom view layer)
+        // Send data. (Might be more elegant to write a custom view layer)
 
         return $response;
     }

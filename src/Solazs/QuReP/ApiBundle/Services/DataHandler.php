@@ -23,6 +23,7 @@ class DataHandler
     /** @var \Solazs\QuReP\ApiBundle\Services\EntityParser $entityParser */
     protected $entityParser;
     protected $filters;
+    protected $paging;
 
     function __construct(
       EntityManager $entityManager,
@@ -35,6 +36,7 @@ class DataHandler
         $this->formErrorsHandler = $formErrorsHandler;
         $this->entityParser = $entityParser;
         $this->filters = [];
+        $this->paging = ['offset' => 0, 'limit' => 25];
     }
 
     /**
@@ -42,10 +44,10 @@ class DataHandler
      * Builds a query based on paging and filters and executes it, then returns the data.
      *
      * @param string $entityClass
-     * @param array  $paging
+     * @param array  $meta
      * @return array
      */
-    function getAll(string $entityClass, array $paging)
+    function getAll(string $entityClass, array &$meta)
     {
         $parameters = [];
         $qb = $this->em->createQueryBuilder();
@@ -54,8 +56,8 @@ class DataHandler
           ->from($entityClass, 'ent');
         $this->buildJoinSubQuery($qb);
 
-        $qb->setFirstResult($paging['offset']);
-        $qb->setMaxResults($paging['limit']);
+        $qb->setFirstResult($this->paging['offset']);
+        $qb->setMaxResults($this->paging['limit']);
 
         if (count($conditions) > 0) {
             $qb->where($conditions)
@@ -66,16 +68,13 @@ class DataHandler
 
         $paginator = new Paginator($query);
 
-        $data = [
-          'meta' => [
-            'limit'  => $paging['limit'],
-            'offset' => $paging['offset'],
-            'count'  => count($paginator),
-          ],
-          'data' => [],
-        ];
+        $data = [];
+        $meta['limit'] = $this->paging['limit'];
+        $meta['offset'] = $this->paging['offset'];
+        $meta['count'] = count($paginator);
+
         foreach ($paginator as $item) {
-            array_push($data['data'], $item);
+            array_push($data, $item);
         }
 
         //$data = $qb->getQuery()->getResult();
@@ -302,9 +301,11 @@ class DataHandler
 
     /**
      * @param array $filters
+     * @param array $paging
      */
-    public function setFilters(array $filters)
+    public function setupClass(array $filters, array $paging)
     {
         $this->filters = $filters;
+        $this->paging = $paging;
     }
 }
