@@ -11,9 +11,9 @@ namespace Solazs\QuReP\ApiBundle\Resources;
  */
 abstract class Consts
 {
-    const prop = 'prop';
-    const formProp = 'formProp';
-    const singleProp = 'singleProp';
-    const pluralProp = 'pluralProp';
+    const prop = 'property';
+    const formProp = 'formProperty';
+    const singleProp = 'singularRelation';
+    const pluralProp = 'pluralRelation';
     const validOperands = ['isnull', 'isnotnull', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'notlike'];
 }

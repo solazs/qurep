@@ -4,6 +4,7 @@ namespace Solazs\QuReP\ApiBundle\Controller;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
+use Solazs\QuReP\ApiBundle\Exception\RouteException;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Solazs\QuReP\ApiBundle\Serializer\FieldsListExclusionStrategy;
 use Solazs\QuReP\ApiBundle\Services\DataHandler;
@@ -28,6 +29,7 @@ class ApiController extends Controller
      * @param Request $request
      * @param string  $apiRoute
      * @return array|\Symfony\Component\HttpFoundation\Response
+     * @throws \Solazs\QuReP\ApiBundle\Exception\RouteException
      */
     public function indexAction(Request $request, string $apiRoute)
     {
@@ -94,6 +96,9 @@ class ApiController extends Controller
                 $dataHandler->deleteCollection($action['class'], $postData);
                 $data = null;
                 $statusCode = 204;
+                break;
+            case Action::META:
+                $data = $dataHandler->meta($action['class']);
                 break;
             default:
                 $data = null;

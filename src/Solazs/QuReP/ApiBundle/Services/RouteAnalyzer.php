@@ -44,6 +44,7 @@ class RouteAnalyzer
     {
         $class = null;
         $isBulk = false;
+        $isMeta = false;
         $id = null;
         $method = $request->getMethod();
 
@@ -59,9 +60,13 @@ class RouteAnalyzer
                 // This request is either bulk or has an ID at the end.
                 $class = $this->getEntityClassFromString(substr($apiRoute, 0, strpos($apiRoute, '/')));
                 $id = substr($apiRoute, strpos($apiRoute, '/') + 1, strlen($apiRoute) - strpos($apiRoute, '/'));
-                if ($id === "bulk") {
+                if ($id === 'bulk') {
                     // Bulk it is!
                     $isBulk = true;
+                } else {
+                    if ($id === 'meta') {
+                        $isMeta = true;
+                    }
                 }
             }
         }
@@ -72,12 +77,16 @@ class RouteAnalyzer
 
         if ($method === "GET") {
             if ($isBulk) {
-                throw new RouteException('Can not handle bulk GET request');
+                throw new MethodNotAllowedException(array('POST', 'DELETE'), $method.' not supported for bulk requests.');
             }
-            if ($id !== null) {
-                $action = Action::GET_SINGLE;
+            if ($isMeta) {
+                $action = Action::META;
             } else {
-                $action = Action::GET_COLLECTION;
+                if ($id !== null) {
+                    $action = Action::GET_SINGLE;
+                } else {
+                    $action = Action::GET_COLLECTION;
+                }
             }
         } else {
             if ($method === "POST") {
@@ -102,7 +111,7 @@ class RouteAnalyzer
                         }
                     }
                 } else {
-                    throw new MethodNotAllowedException(array("GET", "POST", "DELETE"), $method.' not supported.');
+                    throw new MethodNotAllowedException(array('GET', 'POST', 'DELETE'), $method.' not supported.');
                 }
             }
         }
@@ -140,14 +149,14 @@ class RouteAnalyzer
      * Returns sensible defaults if values are absent from the request.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return array('offset'=>0,'limit=>100)
+     * @return array('offset'=>0,'limit=>25)
      * @throws \Solazs\QuReP\ApiBundle\Exception\RouteException
      */
     public function extractPaging(Request $request) : array
     {
         $paging = [
           'offset' => 0,
-          'limit'  => 100,
+          'limit'  => 25,
         ];
 
         if ($request->query->has('limit')) {

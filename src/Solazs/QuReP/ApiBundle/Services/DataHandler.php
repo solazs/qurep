@@ -299,6 +299,11 @@ class DataHandler
           ->execute();
     }
 
+    function meta(string $entityClass): array
+    {
+        return $this->entityParser->getProps($entityClass);
+    }
+
     /**
      * @param array $filters
      * @param array $paging

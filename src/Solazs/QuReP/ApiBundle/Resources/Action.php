@@ -19,4 +19,5 @@ abstract class Action
     const UPDATE_COLLECTION = 'UPDATE_COLLECTION';
     const DELETE_SINGLE = 'DELETE_SINGLE';
     const DELETE_COLLECTION = 'DELETE_COLLECTION';
+    const META = 'META';
 }
