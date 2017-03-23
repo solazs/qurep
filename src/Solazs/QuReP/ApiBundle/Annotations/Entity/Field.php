@@ -7,10 +7,10 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\Common\Annotations\AnnotationException;
 
 /**
- * This annotation serves the purpose to mark which properties should be used to generate the Forms that will be used to
- * insert/update data.
+ * This annotation is used to mark a property of an entity to be processed by QuReP.
  *
- * Basically add this annotation to any properties you plan to POST to the entity in question.
+ * Only properties with a type supplied shall be POSTed to the API. This is because QuReP relies extensively on Symfony Forms
+ * for updating/creating resources. Forms will be generated on the fly using this type.
  *
  * @property string type
  * Should be one of the Symfony FormTypes (e.g. TextType for strings, or CheckboxType for boolean values),
@@ -25,7 +25,7 @@ use Doctrine\Common\Annotations\AnnotationException;
  * @Annotation
  * @Annotation\Target("PROPERTY")
  */
-class FormProperty
+class Field
 {
     /** @var string
      * @Annotation\Required()
@@ -38,14 +38,15 @@ class FormProperty
 
     public function __construct($values)
     {
-        if (!array_key_exists('type', $values)) {
-            throw new AnnotationException('type property is required for the FormProperty Annotation');
-        }
-        $this->type = $values['type'];
-        if (!class_exists('\Symfony\Component\Form\Extension\Core\Type\\'.$this->type)) {
-            throw new AnnotationException('Class '.$this->type.' does not exists.');
+        if (array_key_exists('type', $values)) {
+            $this->type = $values['type'];
+            if (!class_exists('\Symfony\Component\Form\Extension\Core\Type\\'.$this->type)) {
+                throw new AnnotationException('Class '.$this->type.' does not exists.');
+            } else {
+                $this->type = '\Symfony\Component\Form\Extension\Core\Type\\'.$this->type;
+            }
         } else {
-            $this->type = '\Symfony\Component\Form\Extension\Core\Type\\'.$this->type;
+            $this->type = null;
         }
         if (array_key_exists('options', $values)) {
             $this->options = $values['options'];

@@ -2,10 +2,12 @@
 
 namespace Solazs\QuReP\ApiBundle\Services;
 
-use Solazs\QuReP\ApiBundle\Resources\Consts;
+use Solazs\QuReP\ApiBundle\Annotations\Entity\Field;
+use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Form;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -32,20 +34,20 @@ class EntityFormBuilder
      * Creates a form based on $entity.
      * To do this, $entityParser supplies the props of the class which are then mapped to form fields.
      *
-     * @param $entityClass
-     * @param $entity
-     * @return \Symfony\Component\Form\Form
+     * @param string $entityClass
+     * @param mixed  $entity
+     * @return \Symfony\Component\Form\FormInterface
      */
-    public function getForm($entityClass, $entity) : Form
+    public function getForm(string $entityClass, $entity): FormInterface
     {
         $properties = $this->entityParser->getProps($entityClass);
 
         if (count($properties) <= 1) {
-            throw new HttpException(500, "There are no properties annotated with Type in ".$entityClass);
+            throw new HttpException(500, 'There are no properties annotated with '.Field::class.' in '.$entityClass);
         }
 
         $formBuilder = $this->formFactory->createBuilder(
-          'Symfony\Component\Form\Extension\Core\Type\FormType',
+          FormType::class,
           $entity,
           [
             'data_class'      => $entityClass,
@@ -54,30 +56,34 @@ class EntityFormBuilder
         );
         foreach ($properties as $property) {
             switch ($property['propType']) {
-                case (Consts::formProp):
+                case (PropType::TYPED_PROP):
+                    $opts = $property['options'] === null ? [] : $property['options'];
+                    $opts['property_path'] = $property['name'];
                     $formBuilder->add(
                       $property['label'],
                       $property['type'],
-                      $property['options'] === null ? [] : $property['options']
+                      $opts
                     );
                     break;
-                case (Consts::singleProp):
+                case (PropType::SINGLE_PROP):
+                    $opts = $property['options'] === null ? [] : $property['options'];
+                    $opts['property_path'] = $property['name'];
+                    $opts['class'] = $property['class'];
                     $formBuilder->add(
                       $property['label'],
                       EntityType::class,
-                      [
-                        'class' => $property['class'],
-                      ]
+                      $opts
                     );
                     break;
-                case (Consts::pluralProp):
+                case (PropType::PLURAL_PROP):
+                    $opts = $property['options'] === null ? [] : $property['options'];
+                    $opts['property_path'] = $property['name'];
+                    $opts['class'] = $property['class'];
+                    $opts['multiple'] = true;
                     $formBuilder->add(
                       $property['label'],
                       EntityType::class,
-                      [
-                        'multiple' => true,
-                        'class'    => $property['class'],
-                      ]
+                      $opts
                     );
                     break;
             }

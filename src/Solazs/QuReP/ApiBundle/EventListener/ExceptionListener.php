@@ -3,6 +3,7 @@
 namespace Solazs\QuReP\ApiBundle\EventListener;
 
 
+use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
 use Solazs\QuReP\ApiBundle\Exception\ExceptionConsts;
 use Solazs\QuReP\ApiBundle\Exception\FormErrorException;
@@ -23,11 +24,13 @@ use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundE
  */
 class ExceptionListener
 {
+    protected $serializer;
     protected $logger;
     protected $env;
 
-    public function __construct(LoggerInterface $logger, string $env)
+    public function __construct(SerializerInterface $serializer, LoggerInterface $logger, string $env)
     {
+        $this->serializer = $serializer;
         $this->logger = $logger;
         $this->env = $env;
     }
@@ -48,63 +51,69 @@ class ExceptionListener
             // inject custom error codes/error constraints to exception types here.
 
             $response = new Response(
-              json_encode(
+              $this->serializer->serialize(
                 array(
                   'error' => $exception->getMessage(),
                   'code'  => $exception->getCode() == null ? null : $exception->getCode(),
-                )
+                ),
+                'json'
               )
             );
         } elseif ($exception instanceof FormErrorException) {
-            // 400
             $response = new Response(
-              json_encode(
+              $this->serializer->serialize(
                 array(
-                  'error' => $exception->getErrorArray(),
+                  'error' => $exception->getMessage(),
+                  'form'  => $exception->getForm(),
                   'code'  => ExceptionConsts::BADREQUEST,
-                )
+                ),
+                'json'
               ), ExceptionConsts::BADREQUEST
             );
             $response->setStatusCode(400);
         } elseif ($exception instanceof BadRequestHttpException) {
             // 400
             $response = new Response(
-              json_encode(
+              $this->serializer->serialize(
                 array(
                   'error' => $exception->getMessage(),
                   'code'  => ExceptionConsts::BADREQUEST,
-                )
+                ),
+                'json'
               ), ExceptionConsts::BADREQUEST
             );
         } elseif ($exception instanceof AuthenticationCredentialsNotFoundException) {
             // 403
             $response = new Response(
-              json_encode(
+              $this->serializer->serialize(
                 array(
                   'error' => "Login credentials not found",
                   'code'  => ExceptionConsts::UNAUTHORIZED,
-                )
+                ),
+                'json'
               ), ExceptionConsts::UNAUTHORIZED
             );
             $level = 'warning';
         } elseif ($exception instanceof NotFoundHttpException) {
             // 404
             $response = new Response(
-              json_encode(
+              $this->serializer->serialize(
                 array(
                   'error' => $exception->getMessage(),
                   'code'  => ExceptionConsts::NOTFOUNDERROR,
-                )
+                ),
+                'json'
               ), ExceptionConsts::NOTFOUNDERROR
             );
         } elseif ($exception instanceof MethodNotAllowedException) {
             // 405
             $response = new Response(
-              json_encode(
+              $this->serializer->serialize(
                 array(
                   'error' => $exception->getMessage(),
                   'code'  => ExceptionConsts::METHODNOTALLOWED,
-                )
+                ),
+                'json'
               ), ExceptionConsts::METHODNOTALLOWED
             );
             $level = 'warning';
@@ -119,7 +128,7 @@ class ExceptionListener
                 $payload['trace'] = $exception->getTraceAsString();
             }
             $response = new Response(
-              json_encode($payload),
+              $this->serializer->serialize($payload, 'json'),
               500
             );
             $level = 'error';

@@ -6,7 +6,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Solazs\QuReP\ApiBundle\Resources\Consts;
+use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -159,7 +159,7 @@ class DataHandler
         $fields = [];
         $props = $this->entityParser->getProps($entityClass);
         foreach ($props as $prop) {
-            if (($prop['propType'] == Consts::prop || $prop['propType'] == Consts::formProp)) {
+            if (($prop['propType'] == PropType::PROP || $prop['propType'] == PropType::TYPED_PROP)) {
                 array_push($fields, $prop['name']);
             }
         }
@@ -248,8 +248,7 @@ class DataHandler
 
     function handleFormError($form)
     {
-        $data = $this->formErrorsHandler->serializeFormErrors($form, true);
-        throw new FormErrorException($data);
+        throw new FormErrorException($form);
     }
 
     function create(string $entityClass, array $postData = array())

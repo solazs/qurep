@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Solazs\QuReP\ApiBundle\Exception\RouteException;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
+use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -239,7 +240,7 @@ class RouteAnalyzer
         $found = false;
         foreach ($this->entityParser->getProps($entityClass) as $prop) {
             if ($prop['name'] == $bit) {
-                if (($prop['propType'] == Consts::pluralProp || $prop['propType'] == Consts::singleProp) || $forFilter) {
+                if (($prop['propType'] == PropType::PLURAL_PROP || $prop['propType'] == PropType::SINGLE_PROP) || $forFilter) {
                     $found = $prop;
                 }
             }

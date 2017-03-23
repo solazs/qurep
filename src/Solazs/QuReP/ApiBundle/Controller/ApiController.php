@@ -2,11 +2,10 @@
 
 namespace Solazs\QuReP\ApiBundle\Controller;
 
-use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
-use Solazs\QuReP\ApiBundle\Exception\RouteException;
 use Solazs\QuReP\ApiBundle\Resources\Action;
 use Solazs\QuReP\ApiBundle\Serializer\FieldsListExclusionStrategy;
+use Solazs\QuReP\ApiBundle\Serializer\QuRePSerializationContext;
 use Solazs\QuReP\ApiBundle\Services\DataHandler;
 use Solazs\QuReP\ApiBundle\Services\RouteAnalyzer;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -39,10 +38,12 @@ class ApiController extends Controller
 
         /** @var RouteAnalyzer $routeAnalyzer */
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');
-        $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute); // Determine class and action to take
+        // Determine entity class and action to take
+        $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
 
         /** @var DataHandler $dataHandler */
         $dataHandler = $this->get('qurep_api.data_handler');
+        // Initialize DataHandler with filter & paging information from the query parameters
         $dataHandler->setupClass(
           $routeAnalyzer->extractFilters($action['class'], $request),
           $routeAnalyzer->extractPaging($request)
@@ -111,10 +112,11 @@ class ApiController extends Controller
         if ($data !== null) {
             // We have some data to return
 
-            // Fill in expanded data
+            // Extract expand information from the request
             $expands = $routeAnalyzer->extractExpand($request, $action['class']);
             if (count($expands) > 0) {
-                $data = $this->get("qurep_api.entity_expander")->expandEntity(
+                // Expand our data
+                $data = $this->get('qurep_api.entity_expander')->expandEntity(
                   $expands,
                   $action['class'],
                   $data,
@@ -137,13 +139,14 @@ class ApiController extends Controller
             $serializer = $this->get('jms_serializer');
             // We need to create a custom SerializationContext to be able to whitelist properties in the response
             // TODO: projection (or field list) should be exposed on the API
-            $serializationContext = new SerializationContext();
+            $serializationContext = new QuRePSerializationContext();
             $serializationContext->addExclusionStrategy(new FieldsListExclusionStrategy($dataHandler, $expands));
             $jsonData = $serializer->serialize(
               ["data" => $data, "meta" => $meta],
               "json",
               $serializationContext
             );
+
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
             $response->setStatusCode($statusCode);
@@ -152,7 +155,7 @@ class ApiController extends Controller
             $response->setStatusCode(204);
         }
 
-        // Send data. (Might be more elegant to write a custom view layer)
+        // Send data. TODO: It'd be more elegant to write a custom view layer.
 
         return $response;
     }

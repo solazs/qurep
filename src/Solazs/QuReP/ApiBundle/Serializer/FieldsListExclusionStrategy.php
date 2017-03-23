@@ -7,6 +7,7 @@ use JMS\Serializer\Context;
 use JMS\Serializer\Exclusion\ExclusionStrategyInterface;
 use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
+use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Solazs\QuReP\ApiBundle\Services\DataHandler;
 
 /**
@@ -68,7 +69,14 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
     {
         $cnt = 1;
         foreach ($this->expands as $expand) {
-            if ($this->walkExpand($expand, $class, $name, $depth, $cnt)) {
+            if ($this->walkExpand(
+              $expand,
+              $class,
+              $name,
+              $depth,
+              $expand['propType'] === PropType::PLURAL_PROP ? $cnt + 1 : $cnt
+            )
+            ) {
                 return true;
             }
         }
@@ -83,7 +91,13 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
         }
 
         if ($expand['children'] != null && ($depth != $cnt)) {
-            return $this->walkExpand($expand['children'], $class, $name, $depth, $cnt + 1);
+            return $this->walkExpand(
+              $expand['children'],
+              $class,
+              $name,
+              $depth,
+              $expand['propType'] === PropType::PLURAL_PROP ? $cnt + 2 : $cnt + 1
+            );
         }
 
         return false;

@@ -2,6 +2,8 @@
 
 namespace Solazs\QuReP\ApiBundle\Exception;
 
+use Symfony\Component\Form\FormInterface;
+
 
 /**
  * Class FormErrorException
@@ -12,19 +14,19 @@ namespace Solazs\QuReP\ApiBundle\Exception;
  */
 class FormErrorException extends \Exception
 {
-    private $errorArray;
+    protected $form;
 
-    public function __construct(array $errorArray, $code = 400, \Exception $previous = null)
+    public function __construct(FormInterface $form, $code = 400, \Exception $previous = null)
     {
-        $this->errorArray = $errorArray;
-        parent::__construct(var_export($this->errorArray, true), $code, $previous);
+        $this->form = $form;
+        parent::__construct("Invalid Form", $code, $previous);
     }
 
     /**
-     * @return array
+     * @return FormInterface
      */
-    public function getErrorArray()
+    public function getForm()
     {
-        return $this->errorArray;
+        return $this->form;
     }
 }

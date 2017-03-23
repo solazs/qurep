@@ -9,7 +9,9 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
-use Solazs\QuReP\ApiBundle\Annotations\Entity\FormProperty;
+use Psr\Log\LoggerInterface;
+use Solazs\QuReP\ApiBundle\Annotations\Entity\Field;
+use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Solazs\QuReP\ApiBundle\Resources\Consts;
 
 /**
@@ -26,11 +28,16 @@ class EntityParser
     /** @var \Doctrine\Common\Annotations\AnnotationReader $reader */
     protected $reader;
     protected $entities;
+    protected $logger;
+    protected $loglbl = Consts::qurepLogLabel.'EntityParser: ';
+    protected $props;
 
-    function __construct(Cache $cache)
+    function __construct(Cache $cache, LoggerInterface $logger)
     {
         $this->cache = $cache;
+        $this->logger = $logger;
         $this->reader = new AnnotationReader();
+        $this->props = null;
     }
 
     public function setConfig($entities)
@@ -44,16 +51,25 @@ class EntityParser
      * @param string $entityClass
      * @return array
      */
-    public function getProps(string $entityClass) :array
+    public function getProps(string $entityClass): array
     {
-        if ($this->cache->contains($entityClass)) {
-            $properties = $this->cache->fetch($entityClass);
-        } else {
-            $properties = $this->parseProps($entityClass);
-            $this->cache->save($entityClass, $properties, 3600);
+        if ($this->props === null) {
+            if ($this->cache->contains($entityClass)) {
+                $this->props = $this->cache->fetch($entityClass);
+                if (!$this->props) {
+                    $this->logger->error(
+                      $this->loglbl.'Cache fetch() resulted false, but cache contains() resulted true. '
+                      .'This means something is not OK with the cache.'
+                    );
+                    $this->props = $this->parseProps($entityClass);
+                }
+            } else {
+                $this->props = $this->parseProps($entityClass);
+                $this->cache->save($entityClass, $this->props, 3600);
+            }
         }
 
-        return $properties;
+        return $this->props;
     }
 
     /**
@@ -71,7 +87,7 @@ class EntityParser
      * @param $entityClass
      * @return array
      */
-    protected function parseProps($entityClass) : array
+    protected function parseProps($entityClass): array
     {
         $properties = [];
         $refClass = new \ReflectionClass($entityClass);
@@ -79,43 +95,33 @@ class EntityParser
         $entityProperties = $refClass->getProperties();
         foreach ($entityProperties as $entityProperty) {
             $field = [];
+            $hadField = false;
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
-                if ($annotation instanceof FormProperty) {
-                    $field["label"] =
+                if ($annotation instanceof Field) {
+                    $hadField = true;
+                    $field['label'] =
                       $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
-                    $field["options"] = $annotation->getOptions();
-                    $field["type"] = $annotation->getType();
-                    $field["propType"] = Consts::formProp;
+                    $field['options'] = $annotation->getOptions();
+                    $field['type'] = $annotation->getType();
+                    $field['propType'] = $field['type'] === null ? PropType::PROP : PropType::TYPED_PROP;
                     $field['name'] = $entityProperty->getName();
+                    $field['class'] = null;
                 }
             }
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
-                if ($annotation instanceof OneToOne) {
-                    if (!array_key_exists('label', $field)) {
-                        $field['label'] = $entityProperty->getName();
-                    }
-                    $field['name'] = $entityProperty->getName();
-                    $field["propType"] = Consts::singleProp;
-                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
-                } elseif ($annotation instanceof OneToMany) {
-                    if (!array_key_exists('label', $field)) {
-                        $field['label'] = $entityProperty->getName();
-                    }
-                    $field['name'] = $entityProperty->getName();
-                    $field["propType"] = Consts::pluralProp;
-                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
-                } elseif ($annotation instanceof ManyToOne) {
-                    if (!array_key_exists('label', $field)) {
-                        $field['label'] = $entityProperty->getName();
-                    }
-                    $field['name'] = $entityProperty->getName();
-                    $field["propType"] = Consts::singleProp;
-                    $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
-                } else {
-                    if (count($field) == 0) {
-                        $field["propType"] = Consts::prop;
-                        $field['label'] = $entityProperty->getName();
-                        $field['name'] = $entityProperty->getName();
+                if ($hadField) {
+                    if ($annotation instanceof OneToOne) {
+                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $field['propType'] = PropType::SINGLE_PROP;
+                        $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                    } elseif ($annotation instanceof OneToMany) {
+                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $field['propType'] = PropType::PLURAL_PROP;
+                        $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                    } elseif ($annotation instanceof ManyToOne) {
+                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $field['propType'] = PropType::SINGLE_PROP;
+                        $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     }
                 }
             }
@@ -128,11 +134,18 @@ class EntityParser
         return $properties;
     }
 
-    protected
-    function getEntityClass(
-      $entityClass,
-      $className
-    ) {
+    protected function warnType(array $field, string $entityName, string $entityClass)
+    {
+        if ($field['type'] !== null) {
+            $this->logger->warning(
+              $this->loglbl.'Property '.$entityName.' of entity '
+              .$entityClass.' has type in Field annotation, but relations will always have EntityType.'
+            );
+        }
+    }
+
+    protected function getEntityClass(string $entityClass, string $className): string
+    {
         if (class_exists($className)) {
             return $className;
         } else {
