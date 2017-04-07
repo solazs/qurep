@@ -12,4 +12,5 @@ DELETE calls for every Entity, when someone has done it already?
 QuReP helps you by providing CRUD operations for any Entity you'd like to
 publish on your API, and does it quickly and out of the box.
 
-For more information, see the [docs](doc/index.md)!
+For more information, see the [docs](doc/index.md) or the 
+[reference implementation/test app](https://github.com/solazs/qurep-testing)!
