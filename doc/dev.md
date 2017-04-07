@@ -74,7 +74,8 @@ Only properties annotated with `Field` will be taken account by QuReP.
 
 * `label` string, defaults to the property name. Can be used to override property name on the REST API
 
-**Note:** only properties with a vaild `type` will be allowed to be POST-ed to the API
+**Note:** only properties with a vaild `type` will be allowed to be POST-ed to the API with the exclusion of relations
+(that is, properties with ManyToMany, ManyToOne, OneToMany, OneToOne annotations), whose type will always be EntityType.
 
 For an example, see [the test app](https://github.com/solazs/qurep-testing/tree/master/src/QuRePTestBundle/Entity)
 
