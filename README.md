@@ -14,3 +14,8 @@ publish on your API, and does it quickly and out of the box.
 
 For more information, see the [docs](doc/index.md) or the 
 [reference implementation/test app](https://github.com/solazs/qurep-testing)!
+
+### About this project
+This project is still under heavy development, things are going to change.
+
+Authorization of entities is on my TODO list, but it's not going to happen soon.
