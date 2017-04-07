@@ -56,6 +56,7 @@ class EntityParser
     {
         if ($this->props === null) {
             if ($this->cache->contains($entityClass)) {
+                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" found in cache.');
                 $this->props = $this->cache->fetch($entityClass);
                 if (!$this->props) {
                     $this->logger->error(
@@ -65,8 +66,11 @@ class EntityParser
                     $this->props = $this->parseProps($entityClass);
                 }
             } else {
+                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" not found in cache.');
                 $this->props = $this->parseProps($entityClass);
+                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" generated.');
                 $this->cache->save($entityClass, $this->props, 3600);
+                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" saved to cache.');
             }
         }
 
@@ -90,8 +94,11 @@ class EntityParser
      */
     protected function parseProps($entityClass): array
     {
+        $this->logger->debug($this->loglbl.'Parsing props data of class "'.$entityClass.'"');
         $properties = [];
         $refClass = new \ReflectionClass($entityClass);
+
+        $propertiesWithoutType = [];
 
         $entityProperties = $refClass->getProperties();
         foreach ($entityProperties as $entityProperty) {
@@ -99,12 +106,12 @@ class EntityParser
             $hadField = false;
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof Field) {
+                    $this->logger->debug(
+                      $this->loglbl.'Found property'.$entityProperty->getName().' of class "'
+                      .$entityClass.'" with Field annotation'
+                    );
                     if ($annotation->getType() === null) {
-                        $this->logger->warning(
-                          $this->loglbl.'Property '.$entityProperty->getName().' of entity '
-                          .$entityClass.' has no type in Field annotation. This means you will not be able to POST this property '
-                          .'to the API. Are you sure this is meant to be read-only?'
-                        );
+                        $propertiesWithoutType[] = $entityProperty->getName();
                     }
                     $hadField = true;
                     $field['label'] =
@@ -119,19 +126,39 @@ class EntityParser
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($hadField) {
                     if ($annotation instanceof OneToOne) {
-                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $propertiesWithoutType = $this->examineType(
+                          $field,
+                          $entityProperty->getName(),
+                          $entityClass,
+                          $propertiesWithoutType
+                        );
                         $field['propType'] = PropType::SINGLE_PROP;
                         $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     } elseif ($annotation instanceof OneToMany) {
-                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $propertiesWithoutType = $this->examineType(
+                          $field,
+                          $entityProperty->getName(),
+                          $entityClass,
+                          $propertiesWithoutType
+                        );
                         $field['propType'] = PropType::PLURAL_PROP;
                         $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     } elseif ($annotation instanceof ManyToOne) {
-                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $propertiesWithoutType = $this->examineType(
+                          $field,
+                          $entityProperty->getName(),
+                          $entityClass,
+                          $propertiesWithoutType
+                        );
                         $field['propType'] = PropType::SINGLE_PROP;
                         $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     } elseif ($annotation instanceof ManyToMany) {
-                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $propertiesWithoutType = $this->examineType(
+                          $field,
+                          $entityProperty->getName(),
+                          $entityClass,
+                          $propertiesWithoutType
+                        );
                         $field['propType'] = PropType::PLURAL_PROP;
                         $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     }
@@ -140,20 +167,44 @@ class EntityParser
 
             if (!in_array($field, $properties) && $field != []) {
                 array_push($properties, $field);
+                $this->logger->debug(
+                  $this->loglbl.'Property '.$entityProperty->getName().' of class "'.$entityClass
+                  .'" has been parsed',
+                  $field
+                );
             }
         }
+
+
+        if (count($propertiesWithoutType) > 0) {
+            $this->logger->warning(
+              $this->loglbl.'Property '.implode(', ', $propertiesWithoutType).' of entity '
+              .$entityClass.' has no type in Field annotation. This means you will not be able to POST this property '
+              .'to the API. Are you sure this is meant to be read-only?'
+            );
+        }
+
+
+        $this->logger->debug(
+          $this->loglbl.'Properties of class "'.$entityClass.'" has been parsed',
+          $properties
+        );
 
         return $properties;
     }
 
-    protected function warnType(array $field, string $entityName, string $entityClass)
+    protected function examineType(array $field, string $entityName, string $entityClass, array $propertiesWithoutType)
     {
         if ($field['type'] !== null) {
             $this->logger->warning(
               $this->loglbl.'Property '.$entityName.' of entity '
               .$entityClass.' has type in Field annotation, but relations will always be of type EntityType.'
             );
+        } else {
+            $propertiesWithoutType = array_diff($propertiesWithoutType, [$entityName]);
         }
+
+        return $propertiesWithoutType;
     }
 
     protected function getEntityClass(string $entityClass, string $className): string
