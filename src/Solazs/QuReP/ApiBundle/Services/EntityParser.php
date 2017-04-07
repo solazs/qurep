@@ -6,6 +6,7 @@ namespace Solazs\QuReP\ApiBundle\Services;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Cache\Cache;
+use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
@@ -122,6 +123,10 @@ class EntityParser
                         $this->warnType($field, $entityProperty->getName(), $entityClass);
                         $field['propType'] = PropType::SINGLE_PROP;
                         $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
+                    } elseif ($annotation instanceof ManyToMany) {
+                        $this->warnType($field, $entityProperty->getName(), $entityClass);
+                        $field['propType'] = PropType::PLURAL_PROP;
+                        $field['class'] = $this->getEntityClass($entityClass, $annotation->targetEntity);
                     }
                 }
             }
@@ -139,7 +144,7 @@ class EntityParser
         if ($field['type'] !== null) {
             $this->logger->warning(
               $this->loglbl.'Property '.$entityName.' of entity '
-              .$entityClass.' has type in Field annotation, but relations will always have EntityType.'
+              .$entityClass.' has type in Field annotation, but relations will always be of type EntityType.'
             );
         }
     }

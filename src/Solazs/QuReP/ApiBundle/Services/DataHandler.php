@@ -19,8 +19,6 @@ class DataHandler
     protected $em;
     /** @var \Solazs\QuReP\ApiBundle\Services\EntityFormBuilder $entityFormBuilder */
     protected $entityFormBuilder;
-    /** @var \Solazs\QuReP\ApiBundle\Services\FormErrorsSerializer $formErrorsHandler */
-    protected $formErrorsHandler;
     /** @var \Solazs\QuReP\ApiBundle\Services\EntityParser $entityParser */
     protected $entityParser;
     protected $filters;
@@ -29,12 +27,10 @@ class DataHandler
     function __construct(
       EntityManager $entityManager,
       EntityFormBuilder $entityFormBuilder,
-      FormErrorsSerializer $formErrorsHandler,
       EntityParser $entityParser
     ) {
         $this->em = $entityManager;
         $this->entityFormBuilder = $entityFormBuilder;
-        $this->formErrorsHandler = $formErrorsHandler;
         $this->entityParser = $entityParser;
         $this->filters = [];
         $this->paging = ['offset' => 0, 'limit' => 25];

@@ -28,7 +28,7 @@ services:
 # Data Handler
     qurep_api.data_handler:
         class: "%qurep_api.classes.data_handler%"
-        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder", "@qurep_api.form_errors_serializer", "@qurep_api.entity_parser" ]
+        arguments: [ "@doctrine.orm.entity_manager", "@qurep_api.entity_form_builder", "@qurep_api.entity_parser" ]
     qurep_api.exception_listener:
         class: "%qurep_api.classes.exception_listener%"
         tags:
