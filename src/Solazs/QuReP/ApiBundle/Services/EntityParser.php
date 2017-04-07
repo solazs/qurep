@@ -99,6 +99,13 @@ class EntityParser
             $hadField = false;
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof Field) {
+                    if ($annotation->getType() === null) {
+                        $this->logger->warning(
+                          $this->loglbl.'Property '.$entityProperty->getName().' of entity '
+                          .$entityClass.' has no type in Field annotation. This means you will not be able to POST this property '
+                          .'to the API. Are you sure this is meant to be read-only?'
+                        );
+                    }
                     $hadField = true;
                     $field['label'] =
                       $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();

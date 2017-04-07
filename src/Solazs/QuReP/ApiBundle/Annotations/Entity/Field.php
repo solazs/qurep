@@ -27,9 +27,7 @@ use Doctrine\Common\Annotations\AnnotationException;
  */
 class Field
 {
-    /** @var string
-     * @Annotation\Required()
-     */
+    /** @var string */
     private $type;
     /** @var array */
     private $options;
