@@ -24,10 +24,10 @@ expand and filter information)
 ## Actions
 
 Method | Single resource (`/users/1`) | Collection (`/users`)
--------------------------------------
-GET | get single user with ID 1 | get collection of users
-POST | update user with ID 1 | create a new user
-DELETE | delete user with ID 1 | delete users listed in body
+-------|------------------------------|-----------------------
+GET    | get single user with ID 1    | get collection of users
+POST   | update user with ID 1        | create a new user
+DELETE | delete user with ID 1        | delete users listed in body
 
 The newly/created or modified resource is sent back to the client upon a successful POST call.
 
@@ -54,6 +54,7 @@ relation: we are looking for users aged between 18 and 60.
 Filtering works through relations too: `/users?filter=parent.name,like,admin` will select only the children of the admin
 
 ## Expanding the data
+
 In a regular GET call, Entity relations will not be serialized. E.g. the parent of a User (which is a ManyToOne
 relation) will not be included. 
 
@@ -62,12 +63,14 @@ To expand these relations,`expand` query option must be provided: `/users?expand
 Expanding also works through relations: `/users?expand=parent.posts` will expand the User's parent and their posts.
 
 ## Paging collections
+
 Paging may be done by specifying `limit` and `offset` query parameters.
 
 `limit` specifies the number to start listing from, defaults to 0.
 `offset` specifies the number of resources to return, defaults to 25.
 
 ## Bulk POST
+
 **IMPORTANT NOTE:** This feature is a work-in-progress.
 
 This is a special method for updating and/or creating resources. 
