@@ -55,6 +55,7 @@ qurep_entities:
 ```
 
 `entity_name` is a string used in the route of the resource
+
 `class` is the Entity class of the resource
 
 
@@ -69,11 +70,11 @@ The Field annotation has the following parameters:
 * `type` string, Symfony Form Field class name. 
 [See the docs for more](http://symfony.com/doc/current/reference/forms/types.html)
 
-**Note:** only properties with a vaild `type` will be allowed to be POST-ed to the API
-
 * `options` array, options array for the Form Fields
 
 * `label` string, defaults to the property name. Can be used to override property name on the REST API
+
+**Note:** only properties with a vaild `type` will be allowed to be POST-ed to the API
 
 For an example, see [the test app](https://github.com/solazs/qurep-testing/tree/master/src/QuRePTestBundle/Entity)
 

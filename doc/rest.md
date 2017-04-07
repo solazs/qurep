@@ -67,6 +67,7 @@ Expanding also works through relations: `/users?expand=parent.posts` will expand
 Paging may be done by specifying `limit` and `offset` query parameters.
 
 `limit` specifies the number to start listing from, defaults to 0.
+
 `offset` specifies the number of resources to return, defaults to 25.
 
 ## Bulk POST
