@@ -1,7 +1,14 @@
-QuReP
-=====
+# QuReP
 
-Quick RESTful API in PHP
+Quick RESTful API in PHP, a domain-independent REST API Symfony bundle.
 
+## What's this good for?
 
-A Symfony project created on November 10, 2015, 10:57 pm.
+Imagine you want to develop a backend application with a RESTful interface.
+Assuming you utilize Symfony3 and Doctrine for the task, the usual approach is to create
+some Controller classes and implement actions in them.
+
+QuReP helps you, by providing CRUD operations for any Entity you'd like to
+publish on your API, and does it quickly and out of the box.
+
+For more information, see the [docs](doc/index.md)!
