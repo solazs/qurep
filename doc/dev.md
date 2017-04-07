@@ -65,7 +65,7 @@ All properties of all Entities must be annotated with `Solazs\QuReP\ApiBundle\An
 
 Only properties annotated with `Field` will be taken account by QuReP.
 
-The Field annotation has the following parameters:
+**Parameters of the `Field` annotation**
 
 * `type` string, Symfony Form Field class name. 
 [See the docs for more](http://symfony.com/doc/current/reference/forms/types.html)

@@ -5,9 +5,7 @@ Throughout the API docs, a theoretical entity, `User` (`users` on the AI) will b
 
 ## Format
 
-All data is expected and sent in JSON format.
-
-All data is returned in a JSON object:
+All data is expected and sent in JSON format, and is returned in a JSON object:
 
 ```json
 {
@@ -16,7 +14,7 @@ All data is returned in a JSON object:
 }
 ```
 
-`meta` is a WIP, and will contain information about the call (links for navigation, paging information,
+`meta` is still WIP, and will contain information about the call (links for navigation, paging information,
 expand and filter information)
 
 `data` contains an array of Entities in case of collections or a JSON representation of an Entity.
@@ -29,7 +27,7 @@ GET    | get single user with ID 1    | get collection of users
 POST   | update user with ID 1        | create a new user
 DELETE | delete user with ID 1        | delete users listed in body
 
-The newly/created or modified resource is sent back to the client upon a successful POST call.
+The newly/created or modified resource is sent back to the client in response to any successful POST call.
 
 DELETE /users expects an array of ID-s to delete from the collection.
 
@@ -74,6 +72,7 @@ Paging may be done by specifying `limit` and `offset` query parameters.
 
 **IMPORTANT NOTE:** This feature is a work-in-progress.
 
-This is a special method for updating and/or creating resources. 
-`POST /users/bulk` expects an array of entity representations. Any entity with an ID (that is found in the database)
+There is a special method for updating and/or creating multiple resources in a single call. 
+
+`POST /users/bulk` expects an array of entity representations. Any entity with an ID that is found in the database
 will be updated, the others created (regardless of ID), with the whole array returned on success.
