@@ -4,6 +4,7 @@ namespace Solazs\QuReP\ApiBundle\Controller;
 
 use JMS\Serializer\Serializer;
 use Solazs\QuReP\ApiBundle\Resources\Action;
+use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Solazs\QuReP\ApiBundle\Serializer\FieldsListExclusionStrategy;
 use Solazs\QuReP\ApiBundle\Serializer\QuRePSerializationContext;
 use Solazs\QuReP\ApiBundle\Services\DataHandler;
@@ -21,6 +22,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  **/
 class ApiController extends Controller
 {
+    protected $loglbl = Consts::qurepLogLabel.'ApiController: ';
+
     /**
      * Main action used to catch all requests.
      *
@@ -33,13 +36,16 @@ class ApiController extends Controller
     public function indexAction(Request $request, string $apiRoute)
     {
         /* @var \Monolog\Logger $logger */
+        $loglbl = $this->loglbl.'indexAction: ';
         $logger = $this->get('logger');
-        $logger->info("ApiController:indexAction invoked with route: ".$apiRoute);
+        $logger->info($loglbl.'indexAction invoked with route: '.$apiRoute);
 
         /** @var RouteAnalyzer $routeAnalyzer */
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');
         // Determine entity class and action to take
         $action = $routeAnalyzer->getActionAndEntity($request, $apiRoute);
+
+        $logger->debug($loglbl.'Got action array.', $action);
 
         /** @var DataHandler $dataHandler */
         $dataHandler = $this->get('qurep_api.data_handler');
@@ -48,6 +54,7 @@ class ApiController extends Controller
           $routeAnalyzer->extractFilters($action['class'], $request),
           $routeAnalyzer->extractPaging($request)
         );
+        $logger->debug($loglbl.'Initialized DataHandler');
 
 
         // Execute action using the DataHandler
@@ -105,6 +112,8 @@ class ApiController extends Controller
                 $data = null;
         }
 
+        $logger->debug($loglbl.'DataHandler returned.', ['data' => $data]);
+
         // Create response
 
         $response = new Response();
@@ -116,6 +125,7 @@ class ApiController extends Controller
             $expands = $routeAnalyzer->extractExpand($request, $action['class']);
             if (count($expands) > 0) {
                 // Expand our data
+                $logger->debug($loglbl.'Expanding expands');
                 $data = $this->get('qurep_api.entity_expander')->expandEntity(
                   $expands,
                   $action['class'],
@@ -131,7 +141,7 @@ class ApiController extends Controller
                   $dataHandler
                 );
             } else {
-                $logger->debug('ApiController:indexAction expands array is empty, skipping expandEntity call');
+                $logger->debug($loglbl.'expands array is empty, skipping expandEntity call');
             }
 
             //Serialization
@@ -141,6 +151,7 @@ class ApiController extends Controller
             // TODO: projection (or field list) should be exposed on the API
             $serializationContext = new QuRePSerializationContext();
             $serializationContext->addExclusionStrategy(new FieldsListExclusionStrategy($dataHandler, $expands));
+            $logger->debug($loglbl.'serializing data');
             $jsonData = $serializer->serialize(
               ["data" => $data, "meta" => $meta],
               "json",
@@ -150,9 +161,11 @@ class ApiController extends Controller
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
             $response->setStatusCode($statusCode);
+            $logger->debug($loglbl.'Request processing is complete, returning data with status code '.$statusCode);
         } else {
             // Empty response
             $response->setStatusCode(204);
+            $logger->debug($loglbl.'Returning empty response');
         }
 
         // Send data. TODO: It'd be more elegant to write a custom view layer.

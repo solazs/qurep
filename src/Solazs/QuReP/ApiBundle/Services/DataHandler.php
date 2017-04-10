@@ -6,6 +6,8 @@ namespace Solazs\QuReP\ApiBundle\Services;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Psr\Log\LoggerInterface;
+use Solazs\QuReP\ApiBundle\Resources\Consts;
 use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -23,17 +25,22 @@ class DataHandler
     protected $entityParser;
     protected $filters;
     protected $paging;
+    /** @var \Psr\Log\LoggerInterface $logger */
+    protected $logger;
+    protected $loglbl = Consts::qurepLogLabel.'DataHandler: ';
 
     function __construct(
       EntityManager $entityManager,
       EntityFormBuilder $entityFormBuilder,
-      EntityParser $entityParser
+      EntityParser $entityParser,
+      LoggerInterface $logger
     ) {
         $this->em = $entityManager;
         $this->entityFormBuilder = $entityFormBuilder;
         $this->entityParser = $entityParser;
         $this->filters = [];
         $this->paging = ['offset' => 0, 'limit' => 25];
+        $this->logger = $logger;
     }
 
     /**
@@ -46,6 +53,7 @@ class DataHandler
      */
     function getAll(string $entityClass, array &$meta)
     {
+        $this->logger->debug($this->loglbl.'getAll called');
         $parameters = [];
         $qb = $this->em->createQueryBuilder();
         $conditions = $this->buildFilterSubQuery($qb, $parameters);
@@ -63,6 +71,8 @@ class DataHandler
 
         $query = $qb->getQuery();
 
+        $this->logger->debug($this->loglbl.'getAll created query', ['query' => $query->getSQL()]);
+
         $paginator = new Paginator($query);
 
         $data = [];
@@ -75,6 +85,7 @@ class DataHandler
         }
 
         //$data = $qb->getQuery()->getResult();
+        $this->logger->debug($this->loglbl.'getAll returning data', $data);
 
         return $data;
     }
@@ -175,6 +186,7 @@ class DataHandler
      */
     public function bulkUpdate(string $entityClass, array $postData = array())
     {
+        $this->logger->debug($this->loglbl.'bulkUpdate called');
 
         if (!is_array($postData)) {
             throw new BadRequestHttpException('Data is not an array');
@@ -195,11 +207,26 @@ class DataHandler
             $returnData[] = $entity;
         }
 
+
+        $this->logger->debug($this->loglbl.'bulkUpdate successful');
+
         return $returnData;
     }
 
-    function update(string $entityClass, $id = 0, array $postData = array())
+    /**
+     * Updates a single resource of the supplied entity class with the supplied ID.
+     * Upon success, the updated entity is returned.
+     * Upon failure, form error handling is performed, which throws an exception.
+     *
+     *
+     * @param string $entityClass
+     * @param int    $id
+     * @param array  $postData
+     * @return mixed
+     */
+    public function update(string $entityClass, $id = 0, array $postData = array())
     {
+        $this->logger->debug($this->loglbl.'update called');
         if (count($postData) == 0) {
             throw new BadRequestHttpException('No data supplied');
         }
@@ -216,17 +243,27 @@ class DataHandler
             $this->em->persist($entity);
             $this->em->flush();
 
+            $this->logger->debug($this->loglbl.'update successful');
+
             return $this->get($entityClass, $entity->getId());
         } else {
             $this->handleFormError($form);
 
-            return $form;
+            return null;
         }
 
     }
 
-    function get(string $entityClass, int $id = 0)
+    /**
+     * Get a single resource of the supplied class with the given ID.
+     *
+     * @param string $entityClass
+     * @param int    $id
+     * @return mixed
+     */
+    public function get(string $entityClass, int $id = 0)
     {
+        $this->logger->debug($this->loglbl.'get called');
         $qb = $this->em->createQueryBuilder()
           ->select('ent')
           ->from($entityClass, 'ent');
@@ -239,16 +276,26 @@ class DataHandler
             throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
         }
 
+        $this->logger->debug($this->loglbl.'get successful');
+
         return $data;
     }
 
-    function handleFormError($form)
+    private function handleFormError($form)
     {
         throw new FormErrorException($form);
     }
 
+    /**
+     * Inserts a resource into the database and returns the newly created entity.
+     *
+     * @param string $entityClass
+     * @param array  $postData
+     * @return mixed
+     */
     function create(string $entityClass, array $postData = array())
     {
+        $this->logger->debug($this->loglbl.'create called');
         if (count($postData) == 0) {
             throw new BadRequestHttpException('No data supplied');
         }
@@ -262,27 +309,44 @@ class DataHandler
             $this->em->persist($entity);
             $this->em->flush();
 
+            $this->logger->debug($this->loglbl.'create successful');
+
             return $this->get($entityClass, $entity->getId());
         } else {
             $this->handleFormError($form);
 
-            return $form;
+            return null;
         }
 
     }
 
-    function delete(string $entityClass, int $id = 0)
+    /**
+     * Deletes a single resource of the supplied class with the given ID.
+     *
+     * @param string $entityClass
+     * @param int    $id
+     */
+    public function delete(string $entityClass, int $id = 0)
     {
+        $this->logger->debug($this->loglbl.'delete called');
         $entity = $this->em->getReference($entityClass, $id);
         if (!$entity) {
             throw new NotFoundHttpException('Entity with id '.$id.' was not found in the database.');
         }
         $this->em->remove($entity);
         $this->em->flush();
+        $this->logger->debug($this->loglbl.'delete successful');
     }
 
-    function deleteCollection(string $entityClass, array $postData = array())
+    /**
+     * Deletes resources of the supplied class with the given IDs.
+     *
+     * @param string $entityClass
+     * @param array  $postData
+     */
+    public function deleteCollection(string $entityClass, array $postData = array())
     {
+        $this->logger->debug($this->loglbl.'deleteCollection called');
         $ids = [];
         foreach ($postData as $item) {
             array_push($ids, $item['id']);
@@ -293,10 +357,18 @@ class DataHandler
           ->setParameter(':ids', $ids)
           ->getQuery()
           ->execute();
+        $this->logger->debug($this->loglbl.'deleteCollection successful');
     }
 
-    function meta(string $entityClass): array
+    /**
+     * Returns information about the resource
+     *
+     * @param string $entityClass
+     * @return array
+     */
+    public function meta(string $entityClass): array
     {
+        $this->logger->debug($this->loglbl.'meta called');
         $props = $this->entityParser->getProps($entityClass);
         $success = usort(
           $props,
@@ -315,6 +387,7 @@ class DataHandler
                 throw new HttpException(500, 'Failed to sort metadata');
             }
         }
+        $this->logger->debug($this->loglbl.'meta successful');
 
         return $props;
     }
@@ -327,5 +400,6 @@ class DataHandler
     {
         $this->filters = $filters;
         $this->paging = $paging;
+        $this->logger->debug($this->loglbl.'DataHandler setup done', ['filters' => $filters, 'paging' => $paging]);
     }
 }

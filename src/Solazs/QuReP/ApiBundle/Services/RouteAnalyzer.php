@@ -21,6 +21,7 @@ class RouteAnalyzer
     protected $entities = null;
     protected $entityParser;
     protected $logger;
+    protected $loglbl = Consts::qurepLogLabel.'RouteAnalyzer: ';
 
     function __construct(EntityParser $entityParser, LoggerInterface $logger)
     {
@@ -31,6 +32,7 @@ class RouteAnalyzer
     public function setConfig(array $entities)
     {
         $this->entities = $entities;
+        $this->logger->debug($this->loglbl.'Config set', $entities);
     }
 
     /**
@@ -50,13 +52,13 @@ class RouteAnalyzer
         $method = $request->getMethod();
 
         if (strpos($apiRoute, '/') === false) {
-            // No / in route, this is the entity name.
+            // No / in route, this is an entity name.
             $class = $this->getEntityClassFromString($apiRoute);
 
         } else {
             if (strpos($apiRoute, '/') != strrpos($apiRoute, '/')) {
                 // Nested routes are not supported ATM.
-                throw new RouteException('Route '.$apiRoute.' is invalid, too many / in route.');
+                throw new RouteException('Route '.$apiRoute.' is invalid, too many "/" in route.');
             } else {
                 // This request is either bulk or has an ID at the end.
                 $class = $this->getEntityClassFromString(substr($apiRoute, 0, strpos($apiRoute, '/')));
@@ -118,7 +120,7 @@ class RouteAnalyzer
         }
 
         if ($action === null) {
-            $this->logger->debug(
+            $this->logger->error(
               'RouteAnalyzer: Could not determine action to take. Class: '.$class.', route: '.$apiRoute.", method: "
               .$request->getMethod()
             );
@@ -166,6 +168,7 @@ class RouteAnalyzer
                 throw new RouteException('Invalid paging parameter! Limit must be a number.');
             } else {
                 $paging['limit'] = $limit;
+                $this->logger->debug($this->loglbl.'Found limit in request');
             }
         }
 
@@ -175,8 +178,10 @@ class RouteAnalyzer
                 throw new RouteException('Invalid paging parameter! Offset must be a number.');
             } else {
                 $paging['offset'] = $offset;
+                $this->logger->debug($this->loglbl.'Found offset in request');
             }
         }
+        $this->logger->debug($this->loglbl.'Extracted paging data', $paging);
 
         return $paging;
     }
@@ -212,11 +217,11 @@ class RouteAnalyzer
                 }
             }
 
-            $this->logger->debug('RouteAnalyzer: found expand: '.$expandString);
+            $this->logger->debug($this->loglbl.'found expand', $expands);
 
             return $expands;
         } else {
-            $this->logger->debug('RouteAnalyzer: no expands found');
+            $this->logger->debug($this->loglbl.'No expands found');
 
             return [];
         }
@@ -264,12 +269,10 @@ class RouteAnalyzer
     public function extractFilters(string $entityClass, Request $request) : array
     {
         $queryValues = $this->fetchGetValuesFor("filter", $request);
-        $bitsToLog = '';
-        $filters = array();
+        $filters = [];
 
         foreach ($queryValues as $queryValue) {
             $bits = explode(";", $queryValue);
-            $bitsToLog = $bitsToLog.$queryValue.';';
             $subFilter = array();
             foreach ($bits as $bit) {
                 $subFilter[] = $this->explodeAndCheckFilter($bit, $entityClass);
@@ -278,9 +281,9 @@ class RouteAnalyzer
         }
 
         if (count($queryValues) > 0) {
-            $this->logger->debug('RouteAnalyzer: found filters: '.$bitsToLog);
+            $this->logger->debug($this->loglbl.'Found filters', $filters);
         } else {
-            $this->logger->debug('RouteAnalyzer: no filters found');
+            $this->logger->debug($this->loglbl.'No filters found');
         }
 
         return $filters;

@@ -93,7 +93,7 @@ class ExceptionListener
                 'json'
               ), ExceptionConsts::UNAUTHORIZED
             );
-            $level = 'warning';
+            $level = 'notice';
         } elseif ($exception instanceof NotFoundHttpException) {
             // 404
             $response = new Response(
@@ -116,7 +116,6 @@ class ExceptionListener
                 'json'
               ), ExceptionConsts::METHODNOTALLOWED
             );
-            $level = 'warning';
         } else {
             // catch others (500)
             $payload = [
@@ -131,12 +130,12 @@ class ExceptionListener
               $this->serializer->serialize($payload, 'json'),
               500
             );
-            $level = 'error';
+            $level = 'critical';
         }
 
         $this->logger->$level(
           get_class($exception).' caught, returning error message. Exception message: '.$exception->getMessage(),
-          $level == 'error' ?
+          $level !== 'info' ?
             ['stackTrace' => $exception->getTraceAsString()] : []
         );
 

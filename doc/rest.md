@@ -29,7 +29,15 @@ DELETE | delete user with ID 1        | delete users listed in body
 
 The newly/created or modified resource is sent back to the client in response to any successful POST call.
 
-DELETE /users expects an array of ID-s to delete from the collection.
+DELETE /users expects an array of ID-s to delete from the collection in the following format:
+
+```json
+[
+  {"id": 123},
+  {"id": 456},
+  {"id": 789}
+]
+```
 
 ## Filtering collections
 

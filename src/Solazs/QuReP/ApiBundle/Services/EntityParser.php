@@ -59,7 +59,7 @@ class EntityParser
                 $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" found in cache.');
                 $this->props = $this->cache->fetch($entityClass);
                 if (!$this->props) {
-                    $this->logger->error(
+                    $this->logger->critical(
                       $this->loglbl.'Cache fetch() resulted false, but cache contains() resulted true. '
                       .'This means something is not OK with the cache.'
                     );
@@ -107,7 +107,7 @@ class EntityParser
             foreach ($this->reader->getPropertyAnnotations($entityProperty) as $annotation) {
                 if ($annotation instanceof Field) {
                     $this->logger->debug(
-                      $this->loglbl.'Found property'.$entityProperty->getName().' of class "'
+                      $this->loglbl.'Found property '.$entityProperty->getName().' of class "'
                       .$entityClass.'" with Field annotation'
                     );
                     if ($annotation->getType() === null) {
