@@ -38,7 +38,7 @@ class ApiController extends Controller
         /* @var \Monolog\Logger $logger */
         $loglbl = $this->loglbl.'indexAction: ';
         $logger = $this->get('logger');
-        $logger->info($loglbl.'indexAction invoked with route: '.$apiRoute);
+        $logger->info($loglbl.'Invoked with route: '.$apiRoute);
 
         /** @var RouteAnalyzer $routeAnalyzer */
         $routeAnalyzer = $this->get('qurep_api.route_analyzer');

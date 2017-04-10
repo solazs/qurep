@@ -84,3 +84,12 @@ There is a special method for updating and/or creating multiple resources in a s
 
 `POST /users/bulk` expects an array of entity representations. Any entity with an ID that is found in the database
 will be updated, the others created (regardless of ID), with the whole array returned on success.
+
+## Meta 
+
+For each entity there is a meta call, which returns the information parsed from the entities.
+This call will later return Constraints too.
+
+This data may be used as an API documentation or for developing dynamic clients to the API. 
+
+**Note:** meta format will be subject to changes
