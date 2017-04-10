@@ -5,6 +5,7 @@ parameters:
     qurep_api.classes.entity_form_builder: Solazs\QuReP\ApiBundle\Services\EntityFormBuilder
     qurep_api.classes.entity_parser: Solazs\QuReP\ApiBundle\Services\EntityParser
     qurep_api.classes.entity_expander: Solazs\QuReP\ApiBundle\Services\EntityExpander
+    qurep_api.classes.logger.session_request_processor: Solazs\QuReP\ApiBundle\Logger\SessionRequestProcessor
 
 
 services:
@@ -44,3 +45,9 @@ services:
     qurep_api.entity_expander:
         class: "%qurep_api.classes.entity_expander%"
         arguments: [ "@doctrine.orm.entity_manager" ]
+
+    monolog.processor.session_request:
+        class: "%qurep_api.classes.logger.session_request_processor%"
+        arguments:  ['@session']
+        tags:
+            - { name: monolog.processor, method: processRecord }

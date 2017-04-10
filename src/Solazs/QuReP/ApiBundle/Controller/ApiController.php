@@ -161,11 +161,11 @@ class ApiController extends Controller
             $response->setContent($jsonData);
             $response->headers->set('Content-type', 'application/json');
             $response->setStatusCode($statusCode);
-            $logger->debug($loglbl.'Request processing is complete, returning data with status code '.$statusCode);
+            $logger->info($loglbl.'Request processing is complete, returning data with status code '.$statusCode);
         } else {
             // Empty response
             $response->setStatusCode(204);
-            $logger->debug($loglbl.'Returning empty response');
+            $logger->info($loglbl.'Returning empty response');
         }
 
         // Send data. TODO: It'd be more elegant to write a custom view layer.

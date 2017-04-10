@@ -121,14 +121,16 @@ class RouteAnalyzer
 
         if ($action === null) {
             $this->logger->error(
-              'RouteAnalyzer: Could not determine action to take. Class: '.$class.', route: '.$apiRoute.", method: "
+              $this->loglbl
+              .'Could not determine action to take. Class: '.$class.', route: '.$apiRoute.", method: "
               .$request->getMethod()
             );
             throw new RouteException('Could not determine action to take');
         }
 
         $this->logger->info(
-          'RouteAnalyzer: class: '.$class.', id: '.($id === null ? 'null' : $id).', method: '.$request->getMethod()
+          $this->loglbl.
+          'Class: '.$class.', id: '.($id === null ? 'null' : $id).', method: '.$request->getMethod()
           .', taking action: '.$action
         );
 
@@ -139,7 +141,7 @@ class RouteAnalyzer
     {
         foreach ($this->entities as $entity) {
             if ($string === $entity['entity_name']) {
-                $this->logger->debug('RouteAnalyzer: found entity: '.$entity['class']);
+                $this->logger->debug($this->loglbl.'Found entity: '.$entity['class']);
 
                 return $entity['class'];
             }
@@ -253,7 +255,7 @@ class RouteAnalyzer
         if (!$found) {
             throw new BadRequestHttpException('Illegal '.($forFilter ? 'filter' : 'expand')." literal: '".$bit."'");
         } else {
-            $this->logger->debug('RouteAnalyzer: found valid prop for '.($forFilter ? 'filter' : 'expand').': '.$bit);
+            $this->logger->debug($this->loglbl.'Found valid prop for '.($forFilter ? 'filter' : 'expand').': '.$bit);
 
             return $found;
         }
