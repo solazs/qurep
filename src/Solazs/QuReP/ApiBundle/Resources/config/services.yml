@@ -6,6 +6,9 @@ parameters:
     qurep_api.classes.entity_parser: Solazs\QuReP\ApiBundle\Services\EntityParser
     qurep_api.classes.entity_expander: Solazs\QuReP\ApiBundle\Services\EntityExpander
     qurep_api.classes.logger.session_request_processor: Solazs\QuReP\ApiBundle\Logger\SessionRequestProcessor
+    qurep_api.classes.default_naming_policy: JMS\Serializer\Naming\CamelCaseNamingStrategy
+    qurep_api.classes.naming_policy: Solazs\QuReP\ApiBundle\Serializer\QuRePNamingStrategy
+    jms_serializer.camel_case_naming_strategy.class: "%qurep_api.classes.naming_policy%"
 
 
 services:
@@ -41,7 +44,7 @@ services:
         lazy: true
     qurep_api.entity_parser:
         class: "%qurep_api.classes.entity_parser%"
-        arguments: [ "@qurep_api.form_prop_cache", "@logger" ]
+        arguments: [ "@qurep_api.form_prop_cache", "@logger", "%qurep_api.classes.default_naming_policy%" ]
     qurep_api.entity_expander:
         class: "%qurep_api.classes.entity_expander%"
         arguments: [ "@doctrine.orm.entity_manager" ]

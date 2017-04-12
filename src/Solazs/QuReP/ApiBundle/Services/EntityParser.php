@@ -36,13 +36,13 @@ class EntityParser
     protected $props;
     protected $namingStrategy;
 
-    function __construct(Cache $cache, LoggerInterface $logger)
+    function __construct(Cache $cache, LoggerInterface $logger, string $namingStrategyClass)
     {
         $this->cache = $cache;
         $this->logger = $logger;
         $this->reader = new AnnotationReader();
         $this->props = null;
-        $this->namingStrategy = new CamelCaseNamingStrategy();
+        $this->namingStrategy = new $namingStrategyClass();
     }
 
     public function setConfig($entities)

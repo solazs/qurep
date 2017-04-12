@@ -2,6 +2,7 @@
 
 namespace Solazs\QuReP\ApiBundle\DependencyInjection;
 
+use JMS\Serializer\Naming\PropertyNamingStrategyInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
@@ -24,8 +25,8 @@ class QuRePApiExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         foreach ($config['entities'] as $entity) {
-            if (class_exists($entity['class'], false)) {
-                throw new InvalidArgumentException("Invalid configuration value! Class ".$entity['class']." does not exist");
+            if (!class_exists($entity['class'], true)) {
+                throw new InvalidArgumentException('Invalid configuration value! Class '.$entity['class'].' does not exist');
             }
         }
 
