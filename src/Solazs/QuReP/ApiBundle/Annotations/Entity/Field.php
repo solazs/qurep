@@ -51,7 +51,7 @@ class Field
         } else {
             $this->options = null;
         }
-        if (array_key_exists('label', $values)) {
+        if (array_key_exists('label', $values) && $values['label'] !== null && $values['label'] !== "") {
             $this->label = $values['label'];
         } else {
             $this->label = null;

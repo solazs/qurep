@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
+use JMS\Serializer\Metadata\PropertyMetadata;
+use JMS\Serializer\Naming\CamelCaseNamingStrategy;
 use Psr\Log\LoggerInterface;
 use Solazs\QuReP\ApiBundle\Annotations\Entity\Field;
 use Solazs\QuReP\ApiBundle\Resources\PropType;
@@ -32,6 +34,7 @@ class EntityParser
     protected $logger;
     protected $loglbl = Consts::qurepLogLabel.'EntityParser: ';
     protected $props;
+    protected $namingStrategy;
 
     function __construct(Cache $cache, LoggerInterface $logger)
     {
@@ -39,6 +42,7 @@ class EntityParser
         $this->logger = $logger;
         $this->reader = new AnnotationReader();
         $this->props = null;
+        $this->namingStrategy = new CamelCaseNamingStrategy();
     }
 
     public function setConfig($entities)
@@ -114,8 +118,12 @@ class EntityParser
                         $propertiesWithoutType[] = $entityProperty->getName();
                     }
                     $hadField = true;
-                    $field['label'] =
-                      $annotation->getLabel() === null ? $entityProperty->getName() : $annotation->getLabel();
+                    if ($annotation->getLabel() === null) {
+                        $propMetadata = new PropertyMetadata($entityClass, $entityProperty->getName());
+                        $field['label'] = $this->namingStrategy->translateName($propMetadata);
+                    } else {
+                        $field['label'] = $annotation->getLabel();
+                    }
                     $field['options'] = $annotation->getOptions();
                     $field['type'] = $annotation->getType();
                     $field['propType'] = $field['type'] === null ? PropType::PROP : PropType::TYPED_PROP;

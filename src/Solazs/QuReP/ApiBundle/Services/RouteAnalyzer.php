@@ -246,7 +246,7 @@ class RouteAnalyzer
     {
         $found = false;
         foreach ($this->entityParser->getProps($entityClass) as $prop) {
-            if ($prop['name'] == $bit) {
+            if ($prop['label'] == $bit) {
                 if (($prop['propType'] == PropType::PLURAL_PROP || $prop['propType'] == PropType::SINGLE_PROP) || $forFilter) {
                     $found = $prop;
                 }
