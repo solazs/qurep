@@ -1,9 +1,14 @@
 # Developer documentation
 
+This document assumes the reader has a comprehensive understanding of Symfony, Doctrine and developing Symfony applications.
+
 ## Adding QuReP to your app
 
 ### Prerequisites, conditions
-This document assumes the reader has a comprehensive understanding of Symfony, Doctrine and developing Symfony applications. 
+
+**QuReP requires all relations to be bi-directional between your Entities.**
+ 
+The Bundle was designed to work with Doctrine and JMS Serializer, thus it relies heavily on these libraries.
 
 #### 1. Install QuReP
 
