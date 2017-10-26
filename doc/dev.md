@@ -90,12 +90,30 @@ Only properties annotated with `Field` will be taken account by QuReP.
 
 For an example, see [the test app](https://github.com/solazs/qurep-testing/tree/master/src/QuRePTestBundle/Entity)
 
-#### 6. Add routing
+#### 6. Create your controller
+
+Extend the `Solazs/QuReP/ApiBundle/Controller/ApiController` class:
+
+```php
+<?php
+
+namespace My\Bundle\Controller;
+
+use Solazs\QuReP\ApiBundle\Controller\ApiController;
+
+class MyApiController extends ApiController
+{
+    // left empty
+}
+```
+
+
+#### 7. Add routing
 
 `app/config/routing.yml`:
 ```yaml
 qurep_api:
-    resource: "@QuRePTestBundle/Controller/"
+    resource: "@My/Bundle/Controller/"
     type:     annotation
     prefix:   /api
 ```
@@ -104,11 +122,11 @@ Should you want to expand the QuReP-provided API, just add the routes before the
 
 ```yaml
 my_custom_api:
-    resource: "@MyApiBundle/Controller/"
+    resource: "@My/Api/Bundle/Controller/"
     type:     annotation
     prefix:   /api/specific
 qurep_api:
-    resource: "@QuRePTestBundle/Controller/"
+    resource: "@My/Bundle/Controller/"
     type:     annotation
     prefix:   /api
 ```
