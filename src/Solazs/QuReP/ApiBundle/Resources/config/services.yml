@@ -16,7 +16,7 @@ services:
     memcached:
         class: Memcached
         calls:
-            - [ addServers, [ "%memcache_hosts%" ] ]
+            - [ addServers, [ "%memcached_hosts%" ] ]
 
     qurep_api.form_prop_cache:
         class: Doctrine\Common\Cache\MemcachedCache

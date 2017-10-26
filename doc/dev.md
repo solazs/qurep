@@ -52,11 +52,15 @@ qurep_api:
 
 `app/config/parameters.yml`:
 ```yaml
-qurep_entities:
-    - entity_name: users
-      class: Your\Bundle\Entity\User
-    - entity_name: comments
-      class: Your\Bundle\Entity\Comment
+parameters:
+    qurep_entities:
+        - entity_name: users
+          class: Your\Bundle\Entity\User
+        - entity_name: comments
+          class: Your\Bundle\Entity\Comment
+    memcached_hosts:
+        - dsn: memcached
+          port: 11211
 ```
 
 `entity_name` is a string used in the route of the resource
