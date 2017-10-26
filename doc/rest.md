@@ -39,6 +39,15 @@ DELETE /users expects an array of ID-s to delete from the collection in the foll
 ]
 ```
 
+## Meta 
+
+There is a `GET /users/meta` call, which returns the information parsed from the entities.
+Constraints will be included in the future, too.
+
+This data may be used as an API documentation or for developing dynamic clients to the API. 
+
+**Note:** meta format will be subject to changes
+
 ## Filtering collections
 
 Filtering collections is an extremely useful feature of QuReP.
@@ -84,12 +93,3 @@ There is a special method for updating and/or creating multiple resources in a s
 
 `POST /users/bulk` expects an array of entity representations. Any entity with an ID that is found in the database
 will be updated, the others created (regardless of ID), with the whole array returned on success.
-
-## Meta 
-
-There is a `GET /users/meta` call, which returns the information parsed from the entities.
-Constraints will be included in the future, too.
-
-This data may be used as an API documentation or for developing dynamic clients to the API. 
-
-**Note:** meta format will be subject to changes
