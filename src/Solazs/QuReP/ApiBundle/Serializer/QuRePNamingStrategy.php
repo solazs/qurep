@@ -13,7 +13,6 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use JMS\Serializer\Metadata\PropertyMetadata;
 use JMS\Serializer\Naming\PropertyNamingStrategyInterface;
 use Solazs\QuReP\ApiBundle\Annotations\Entity\Field;
-use Solazs\QuReP\ApiBundle\Services\EntityParser;
 
 class QuRePNamingStrategy implements PropertyNamingStrategyInterface
 {
