@@ -19,6 +19,8 @@ The Bundle was designed to work with Doctrine and JMS Serializer, thus it relies
 Composer may do this automatically, but if not, insert the following lines into the `$bundles` array in
 `app/AppKernel.php`:
 
+**IMPORTANT**: add the JMSSerializerBundle, too!
+
 ```php
 class AppKernel extends Kernel
 {
