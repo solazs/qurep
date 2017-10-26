@@ -1,6 +1,6 @@
 # REST API documentation
 
-Throughout the API docs, a theoretical entity, `User` (`users` on the AI) will be used in the examples.
+Throughout the API docs, a theoretical entity, `User` (`users` on the API) will be used in the examples.
 
 
 ## Format
