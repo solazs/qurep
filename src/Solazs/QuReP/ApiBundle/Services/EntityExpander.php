@@ -69,8 +69,7 @@ class EntityExpander
     private function walkArray(array $expand, string $entityClass, $entity, DataHandler $dataHandler)
     {
         $getter = "get".strtoupper(substr($expand['name'], 0, 1)).substr($expand['name'], 1);
-        $entity = $this->doFill($expand, $entityClass, $entity, $dataHandler);
-        if ($expand['children'] != null) {
+        if ($expand['children'] !== null) {
             if ($expand['children']['propType'] === PropType::PLURAL_PROP) {
                 foreach ($entity as $item) {
                     $this->walkArray(
@@ -88,12 +87,14 @@ class EntityExpander
                   $dataHandler
                 );
             }
+        } else {
+            $entity = $this->doFill($entity->$getter());
         }
 
         return $entity;
     }
 
-    private function doFill(array $expand, string $entityClass, $entity, DataHandler $dataHandler)
+    private function doFill($entity)
     {
         if ($entity instanceof Proxy) {
             /** @var Proxy $entity */
