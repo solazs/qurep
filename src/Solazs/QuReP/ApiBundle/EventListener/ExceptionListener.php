@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 
 /**
@@ -83,7 +84,7 @@ class ExceptionListener
               ), ExceptionConsts::BADREQUEST
             );
         } elseif ($exception instanceof AuthenticationCredentialsNotFoundException) {
-            // 403
+            // 401
             $response = new Response(
               $this->serializer->serialize(
                 array(
@@ -92,6 +93,18 @@ class ExceptionListener
                 ),
                 'json'
               ), ExceptionConsts::UNAUTHORIZED
+            );
+            $level = 'notice';
+        } elseif ($exception instanceof AccessDeniedException) {
+            // 403
+            $response = new Response(
+              $this->serializer->serialize(
+                array(
+                  'error' => "Forbidden",
+                  'code'  => ExceptionConsts::FORBIDDEN,
+                ),
+                'json'
+              ), ExceptionConsts::FORBIDDEN
             );
             $level = 'notice';
         } elseif ($exception instanceof NotFoundHttpException) {
