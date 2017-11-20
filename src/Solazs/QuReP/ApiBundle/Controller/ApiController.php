@@ -150,7 +150,10 @@ class ApiController extends Controller
             // We need to create a custom SerializationContext to be able to whitelist properties in the response
             // TODO: projection (or field list) should be exposed on the API
             $serializationContext = new QuRePSerializationContext();
-            $serializationContext->addExclusionStrategy(new FieldsListExclusionStrategy($dataHandler, $expands));
+            $serializationContext->addExclusionStrategy(new FieldsListExclusionStrategy(
+                $dataHandler,
+                $this->get('qurep_api.entity_parser'),
+                $expands));
             $logger->debug($loglbl.'serializing data');
             $jsonData = $serializer->serialize(
               ["data" => $data, "meta" => $meta],

@@ -34,6 +34,7 @@ class EntityParser
     protected $logger;
     protected $loglbl = Consts::qurepLogLabel.'EntityParser: ';
     protected $props;
+    protected $lastClass;
     protected $namingStrategy;
 
     function __construct(Cache $cache, LoggerInterface $logger, string $namingStrategyClass)
@@ -42,6 +43,7 @@ class EntityParser
         $this->logger = $logger;
         $this->reader = new AnnotationReader();
         $this->props = null;
+        $this->lastClass = null;
         $this->namingStrategy = new $namingStrategyClass();
     }
 
@@ -58,23 +60,28 @@ class EntityParser
      */
     public function getProps(string $entityClass): array
     {
-        if ($this->props === null) {
-            if ($this->cache->contains($entityClass)) {
-                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" found in cache.');
-                $this->props = $this->cache->fetch($entityClass);
-                if (!$this->props) {
-                    $this->logger->critical(
-                      $this->loglbl.'Cache fetch() resulted false, but cache contains() resulted true. '
-                      .'This means something is not OK with the cache.'
-                    );
+        if ($this->props === null || $this->lastClass !== $entityClass) {
+            if ($this->getEntityName($entityClass) !== null) {
+                if ($this->cache->contains($entityClass)) {
+                    $this->logger->debug($this->loglbl . 'Props data with id "' . $entityClass . '" found in cache.');
+                    $this->props = $this->cache->fetch($entityClass);
+                    if (!$this->props) {
+                        $this->logger->critical(
+                            $this->loglbl . 'Cache fetch() resulted false, but cache contains() resulted true. '
+                            . 'This means something is not OK with the cache.'
+                        );
+                        $this->props = $this->parseProps($entityClass);
+                    }
+                } else {
+                    $this->logger->debug($this->loglbl . 'Props data with id "' . $entityClass . '" not found in cache.');
                     $this->props = $this->parseProps($entityClass);
+                    $this->logger->debug($this->loglbl . 'Props data with id "' . $entityClass . '" generated.');
+                    $this->cache->save($entityClass, $this->props, 3600);
+                    $this->logger->debug($this->loglbl . 'Props data with id "' . $entityClass . '" saved to cache.');
                 }
+                $this->lastClass = $entityClass;
             } else {
-                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" not found in cache.');
-                $this->props = $this->parseProps($entityClass);
-                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" generated.');
-                $this->cache->save($entityClass, $this->props, 3600);
-                $this->logger->debug($this->loglbl.'Props data with id "'.$entityClass.'" saved to cache.');
+                $this->logger->error('Attempted to parse non-configured entity class.', ['entityClass' => $entityClass]);
             }
         }
 

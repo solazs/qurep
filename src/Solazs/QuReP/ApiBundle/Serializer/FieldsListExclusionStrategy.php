@@ -9,6 +9,7 @@ use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 use Solazs\QuReP\ApiBundle\Resources\PropType;
 use Solazs\QuReP\ApiBundle\Services\DataHandler;
+use Solazs\QuReP\ApiBundle\Services\EntityParser;
 
 /**
  * Class FieldsListExclusionStrategy
@@ -21,11 +22,13 @@ use Solazs\QuReP\ApiBundle\Services\DataHandler;
 class FieldsListExclusionStrategy implements ExclusionStrategyInterface
 {
     private $dataHandler = [];
+    private $entityParser = [];
     private $expands = [];
 
-    public function __construct(DataHandler $dataHandler, array $expands)
+    public function __construct(DataHandler $dataHandler, EntityParser $entityParser, array $expands)
     {
         $this->dataHandler = $dataHandler;
+        $this->entityParser = $entityParser;
         $this->expands = $expands;
     }
 
@@ -67,6 +70,18 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
 
     private function findProp(string $class, string $name, int $depth) : bool
     {
+        $expandedClass = null;
+        $props = $this->entityParser->getProps($class);
+        foreach ($props as $prop) {
+            if ($prop['name'] === $name) {
+                $expandedClass = $prop['class'];
+            }
+        }
+
+        if ($expandedClass === null) {
+            return false;
+        }
+
         $cnt = 1;
         foreach ($this->expands as $expand) {
             if ($this->walkExpand(
