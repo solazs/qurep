@@ -2,7 +2,6 @@
 
 namespace Solazs\QuReP\ApiBundle\DependencyInjection;
 
-use JMS\Serializer\Naming\PropertyNamingStrategyInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;

@@ -89,23 +89,28 @@ class EntityExpander
                 );
             }
         } else {
-            $entity->$getter();
+            $entity = $this->doFill($entity, $getter);
         }
 
         return $entity;
     }
 
-    private function doFill($entity)
+    private function doFill($entity, $getter = null)
     {
-        if ($entity instanceof Proxy) {
-            /** @var Proxy $entity */
-            $entity->__load();
+        if ($getter !== null) {
+            $subject = $entity->$getter();
+        } else {
+            $subject = $entity;
         }
-        if ($entity instanceof PersistentCollection
-          || $entity instanceof MongoDBPersistentCollection
-          || $entity instanceof PHPCRPersistentCollection
+        if ($subject instanceof Proxy) {
+            /** @var Proxy $entity */
+            $subject->__load();
+        }
+        if ($subject instanceof PersistentCollection
+          || $subject instanceof MongoDBPersistentCollection
+          || $subject instanceof PHPCRPersistentCollection
         ) {
-            $entity->initialize();
+            $subject->initialize();
         }
 
         return $entity;
