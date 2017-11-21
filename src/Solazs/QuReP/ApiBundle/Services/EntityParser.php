@@ -61,6 +61,7 @@ class EntityParser
     public function getProps(string $entityClass): array
     {
         if ($this->props === null || $this->lastClass !== $entityClass) {
+            // TODO: create a configuration option to allow parsing non-configured classes
             if ($this->getEntityName($entityClass) !== null) {
                 if ($this->cache->contains($entityClass)) {
                     $this->logger->debug($this->loglbl . 'Props data with id "' . $entityClass . '" found in cache.');
@@ -81,7 +82,7 @@ class EntityParser
                 }
                 $this->lastClass = $entityClass;
             } else {
-                $this->logger->error('Attempted to parse non-configured entity class.', ['entityClass' => $entityClass]);
+                $this->logger->error($this->loglbl.'Attempted to parse non-configured entity class.', ['entityClass' => $entityClass]);
             }
         }
 
