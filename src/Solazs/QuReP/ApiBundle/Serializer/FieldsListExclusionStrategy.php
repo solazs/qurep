@@ -86,7 +86,7 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
         foreach ($this->expands as $expand) {
             if ($this->walkExpand(
               $expand,
-              $class,
+              $expandedClass,
               $name,
               $depth,
               $expand['propType'] === PropType::PLURAL_PROP ? $cnt + 1 : $cnt
