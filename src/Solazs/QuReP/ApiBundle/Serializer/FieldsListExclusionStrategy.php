@@ -89,7 +89,7 @@ class FieldsListExclusionStrategy implements ExclusionStrategyInterface
               $expandedClass,
               $name,
               $depth,
-              $expand['propType'] === PropType::PLURAL_PROP ? $cnt + 1 : $cnt
+              $cnt
             )
             ) {
                 return true;

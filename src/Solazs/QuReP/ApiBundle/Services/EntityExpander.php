@@ -69,13 +69,18 @@ class EntityExpander
     private function walkArray(array $expand, string $entityClass, $entity, DataHandler $dataHandler)
     {
         $getter = "get".strtoupper(substr($expand['name'], 0, 1)).substr($expand['name'], 1);
+        if ($entity instanceof PersistentCollection
+          || $entity instanceof MongoDBPersistentCollection
+          || $entity instanceof PHPCRPersistentCollection) {
+            $getter = null;
+        }
         $entity = $this->doFill($entity);
         if ($expand['children'] !== null) {
-            if ($expand['children']['propType'] === PropType::PLURAL_PROP) {
-                foreach ($entity as $item) {
+            if ($expand['propType'] === PropType::PLURAL_PROP) {
+                foreach ($entity->$getter() as $item) {
                     $this->walkArray(
                       $expand['children'],
-                      $entityClass,
+                      $expand['class'],
                       $item,
                       $dataHandler
                     );
@@ -83,7 +88,7 @@ class EntityExpander
             } else {
                 $this->walkArray(
                   $expand['children'],
-                  $entityClass,
+                  $expand['class'],
                   $entity->$getter(),
                   $dataHandler
                 );

@@ -43,7 +43,7 @@ class RouteAnalyzer
      * @return array('class' => $class, 'action' => $action, 'id' => $id)
      * @throws \Solazs\QuReP\ApiBundle\Exception\RouteException
      */
-    public function getActionAndEntity(Request $request, string $apiRoute) : array
+    public function getActionAndEntity(Request $request, string $apiRoute): array
     {
         $class = null;
         $isBulk = false;
@@ -137,7 +137,7 @@ class RouteAnalyzer
         return array('class' => $class, 'action' => $action, 'id' => $id);
     }
 
-    private function getEntityClassFromString(string $string) : string
+    private function getEntityClassFromString(string $string): string
     {
         foreach ($this->entities as $entity) {
             if ($string === $entity['entity_name']) {
@@ -157,7 +157,7 @@ class RouteAnalyzer
      * @return array('offset'=>0,'limit=>25)
      * @throws \Solazs\QuReP\ApiBundle\Exception\RouteException
      */
-    public function extractPaging(Request $request) : array
+    public function extractPaging(Request $request): array
     {
         $paging = [
           'offset' => 0,
@@ -202,7 +202,7 @@ class RouteAnalyzer
      * @param string                                    $entityClass
      * @return array
      */
-    public function extractExpand(Request $request, string $entityClass) : array
+    public function extractExpand(Request $request, string $entityClass): array
     {
         $expands = [];
         if ($request->query->has('expand')) {
@@ -229,23 +229,27 @@ class RouteAnalyzer
         }
     }
 
-    private function walkArray(array $propNames, string $entityClass, bool $forFilter = false) : array
+    private function walkArray(array $propNames, string $entityClass, bool $forFilter = false): array
     {
-        $ret = $this->verifyPropName($propNames[0], $entityClass, $forFilter);
+        $props = $this->entityParser->getProps($entityClass);
+        $ret = $this->verifyPropName($propNames[0], $entityClass, $forFilter, $props);
         if (count($propNames) == 1) {
             $ret['children'] = null;
         } else {
             array_shift($propNames);
-            $ret['children'] = $this->walkArray($propNames, $entityClass, $forFilter);
+            $ret['children'] = $this->walkArray($propNames, $ret['class'], $forFilter);
         }
 
         return $ret;
     }
 
-    private function verifyPropName(string $bit, string $entityClass, bool $forFilter = false) : array
+    private function verifyPropName(string $bit, string $entityClass, bool $forFilter = false, array $props = []): array
     {
+        if (count($props) === 0) {
+            $props = $this->entityParser->getProps($entityClass);
+        }
         $found = false;
-        foreach ($this->entityParser->getProps($entityClass) as $prop) {
+        foreach ($props as $prop) {
             if ($prop['label'] == $bit) {
                 if (($prop['propType'] == PropType::PLURAL_PROP || $prop['propType'] == PropType::SINGLE_PROP) || $forFilter) {
                     $found = $prop;
@@ -268,7 +272,7 @@ class RouteAnalyzer
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return array
      */
-    public function extractFilters(string $entityClass, Request $request) : array
+    public function extractFilters(string $entityClass, Request $request): array
     {
         $queryValues = $this->fetchGetValuesFor("filter", $request);
         $filters = [];
@@ -299,7 +303,7 @@ class RouteAnalyzer
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return array array of values for the key specified (empty if not found)
      */
-    protected function fetchGetValuesFor(string $key, Request $request) : array
+    protected function fetchGetValuesFor(string $key, Request $request): array
     {
         $values = array();
 
@@ -317,7 +321,7 @@ class RouteAnalyzer
         return $values;
     }
 
-    private function explodeAndCheckFilter(string $filter, string $entityClass) : array
+    private function explodeAndCheckFilter(string $filter, string $entityClass): array
     {
         $bits = explode(',', $filter);
         $bits[1] = strtolower($bits[1]);
